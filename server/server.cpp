@@ -2,7 +2,8 @@
 #include <string>
 #include <vector>
 using std::string;
-
+enum WallType {NO, INTERIOR, OUTSIDE, EXIT};
+enum Direction {NORTH, EAST, SOUTH, WEST};
 
 class Player {
 public:
@@ -32,6 +33,7 @@ public:
   BasicSquare() {}
   virtual void effect(Player &player) { return; }
   virtual void move_effect(int& x, int& y) { return; };
+  virtual ~BasicSquare(){}
 };
 
 
@@ -51,64 +53,61 @@ public:
 class Map {
 private:
   std::vector<std::vector<BasicSquare*>> squares;
-  std::vector<std::vector<bool>> wallsVertical;
-  std::vector<std::vector<bool>> wallsHorizontal;
+  std::vector<std::vector<bool>> walls_vertical;
+  std::vector<std::vector<bool>> walls_horizontal;
+  std::pair<Direction, int> exit;
 public:
   const int X;
   const int Y;
   Map(const int X, const int Y):
     X(X), Y(Y),
     squares(X),
-    wallsVertical(X - 1),
-    wallsHorizontal(X){
+    walls_vertical(X - 1),
+    walls_horizontal(X),
+    exit(NORTH, 0) {
       for (std::vector<BasicSquare*>& column: (this->squares)){
         column.resize(Y);
         for (auto& square: column) {
           square = new(BasicSquare);
         }
       }
-      for (auto& column: (this->wallsVertical)){
+      for (auto& column: (this->walls_vertical)){
         column.resize(Y);
         for (auto wall: column) {
           wall = false;
         }
       }
-      for (auto& column: (this->wallsHorizontal)){
+      for (auto& column: (this->walls_horizontal)){
         column.resize(Y - 1);
         for (auto wall: column) {
           wall = false;
         }
       }
     }
+
+  ~Map() {};
+  BasicSquare* get_square(int x, int y) {
+    return (this->squares)[x][y];
+  }
+
+  WallType wall_type(int x, int y, Direction dir) {
+    return NO;
+  }
+
+  bool bomb(int x, int y, Direction dir) {
+    if (this->wall_type(x, y, dir) != OUTSIDE) {
+      // remove wall
+      return true;
+    }
+    return false;
+  }
 };
 
-/*class Map { // maybe arrays will be enough
-public:
-  BasicSquare* **squares;
-public:
-  const int X;
-  const int Y;
-  Map(const int X, const int Y):
-    X(X), Y(Y), squares(new BasicSquare* *[X]){
-      for (int i = 0; i < X; ++i){
-        (this->squares)[i] = new BasicSquare* [Y];
-      }
-    }
 
-};*/
+
+
 
 int main() {
-  Player player1("player1", 1, 1);
-  ExampleSquare square1;
-  Map map(12, 12);
-  //map.squares[3][5] = &square1;
-  //map.squares[3][5]->effect(player1);
-  //map.squares[2][1] = new(BasicSquare);
-  //map.squares[2][1]->effect(player1);
-
-  std::cout << player1.x << player1.y;
- // std::cout << map.wallsHorizontal[8][7];
-
   return 0;
 
 }
