@@ -5,6 +5,19 @@ using std::string;
 enum WallType {NO, INTERIOR, OUTSIDE, EXIT};
 enum Direction {NORTH, EAST, SOUTH, WEST};
 
+
+class Treasure {
+public:
+  int x, y;
+  bool hold;
+  // bool true_treasure
+  Treasure(int x, int y):
+    x(x), y(y),
+    hold(false) { };
+  ~Treasure() {}
+};
+
+
 class Player {
 public:
   const string nickname;
@@ -108,6 +121,18 @@ public:
 
 
 int main() {
+  Player player1("player1", 1, 1);
+  ExampleSquare square1;
+  Map map(12, 12);
+  //map.squares[3][5] = &square1;
+  //map.squares[3][5]->effect(player1);
+  //map.squares[2][1] = new(BasicSquare);
+  //map.squares[2][1]->effect(player1);
+  //map.get_square(3, 5) = new(ExampleSquare);
+  map.get_square(3, 5) -> effect(player1);
+  std::cout << player1.x << player1.y;
+ // std::cout << map.walls_horisontal[8][7];
+
   return 0;
 
 }
