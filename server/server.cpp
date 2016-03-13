@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 using std::string;
 
 
@@ -26,34 +27,70 @@ public:
 
 };
 
-class BasicCell {
+class BasicSquare {
 public:
-  Cell() {}
-  virtual void effect(Player &player) {  }
-  virtual void move_effect(int& x, int& y) {  };
+  BasicSquare() {}
+  virtual void effect(Player &player) { return; }
+  virtual void move_effect(int& x, int& y) { return; };
 };
 
 
-class ExampleCell: public Cell {
+class ExampleSquare: public BasicSquare {
 public:
-  ExampleCell() {}
+  ExampleSquare() {}
   virtual void effect(Player &player) {
-    //
     move_effect(player.x, player.y); // if not empty
-    std::cout << player.nickname << " moved to (57, 57)" << std::endl;
+    std::cout << player.nickname << " moved to (57, 57)" << std::endl; // or return something?
   }
-  virtual void move_effect(int& x, int& y) {
+  virtual void move_effect(int& x, int& y) { // to process treasure movements
     x = 57;
     y = 57;
   };
 };
 
+class Map {
+public:
+  std::vector<std::vector<BasicSquare*>> squares;
+public:
+  const int X;
+  const int Y;
+  Map(const int X, const int Y):
+    X(X), Y(Y), squares(X){
+      for (std::vector<BasicSquare*>& column: (this->squares)){
+        column.resize(Y);
+        for (auto& square: column) {
+          square = new(BasicSquare);
+        }
+      }
+    }
+};
 
+/*class Map { // maybe arrays will be enough
+public:
+  BasicSquare* **squares;
+public:
+  const int X;
+  const int Y;
+  Map(const int X, const int Y):
+    X(X), Y(Y), squares(new BasicSquare* *[X]){
+      for (int i = 0; i < X; ++i){
+        (this->squares)[i] = new BasicSquare* [Y];
+      }
+    }
+
+};*/
 
 int main() {
   Player player1("player1", 1, 1);
-  ExampleCell cell1;
-  cell1.effect(player1);
+  ExampleSquare square1;
+  Map map(12, 12);
+  map.squares[3][5] = &square1;
+  map.squares[3][5]->effect(player1);
+  map.squares[2][1] = new(BasicSquare);
+  map.squares[2][1]->effect(player1);
   std::cout << player1.x << player1.y;
+
+
   return 0;
+
 }
