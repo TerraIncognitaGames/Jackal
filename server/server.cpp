@@ -49,17 +49,34 @@ public:
 };
 
 class Map {
-public:
+private:
   std::vector<std::vector<BasicSquare*>> squares;
+  std::vector<std::vector<bool>> wallsVertical;
+  std::vector<std::vector<bool>> wallsHorizontal;
 public:
   const int X;
   const int Y;
   Map(const int X, const int Y):
-    X(X), Y(Y), squares(X){
+    X(X), Y(Y),
+    squares(X),
+    wallsVertical(X - 1),
+    wallsHorizontal(X){
       for (std::vector<BasicSquare*>& column: (this->squares)){
         column.resize(Y);
         for (auto& square: column) {
           square = new(BasicSquare);
+        }
+      }
+      for (auto& column: (this->wallsVertical)){
+        column.resize(Y);
+        for (auto wall: column) {
+          wall = false;
+        }
+      }
+      for (auto& column: (this->wallsHorizontal)){
+        column.resize(Y - 1);
+        for (auto wall: column) {
+          wall = false;
         }
       }
     }
@@ -84,12 +101,13 @@ int main() {
   Player player1("player1", 1, 1);
   ExampleSquare square1;
   Map map(12, 12);
-  map.squares[3][5] = &square1;
-  map.squares[3][5]->effect(player1);
-  map.squares[2][1] = new(BasicSquare);
-  map.squares[2][1]->effect(player1);
-  std::cout << player1.x << player1.y;
+  //map.squares[3][5] = &square1;
+  //map.squares[3][5]->effect(player1);
+  //map.squares[2][1] = new(BasicSquare);
+  //map.squares[2][1]->effect(player1);
 
+  std::cout << player1.x << player1.y;
+ // std::cout << map.wallsHorizontal[8][7];
 
   return 0;
 
