@@ -1,10 +1,77 @@
 #pragma once
 #include <glut.h>
+#include <string>
+#include <vector>
 
+// Realizes the command template for Visualizer.
+class VisualizerCommand {
+public:
+
+private:
+
+};
+
+// Realizes the class can be taked by Visualizer for
+// initializing.
+class VisualizerInitializingCommand : public VisualizerCommand {
+public:
+    VisualizerInitializingCommand() {}
+
+private:
+
+};
+
+// Realizes the class can be taked by Visualizer for
+// updating.
+class VisualizerUpdatingCommand : public VisualizerCommand {
+public:
+    VisualizerUpdatingCommand() {}
+
+private:
+
+};
+
+// Transforms string into visualizer command.
+class StringParser {
+public:
+    StringParser(std::string string) : string_(string) {}
+
+    VisualizerInitializingCommand ParseIntoVisualizerInitializingCommand() {
+        // future realization depends on the form of command
+    }
+
+    VisualizerUpdatingCommand ParseIntoVisualizerUpdatingCommand() {
+        // future realization depends on the form of command
+    }
+
+private:
+    // Splits string by " "
+    std::vector<std::string> Split() {
+        std::vector<std::string> strings;
+
+        return strings;
+    }
+
+    std::string string_;
+};
+
+// Realizes the drawer.
 class Visualizer {
 public:
     Visualizer() {}
-    void Initialize(const std::string & params) {}
+
+    void Initialize(std::string string_command) {
+        StringParser parser(string_command);
+        auto command = parser.ParseIntoVisualizerInitializingCommand();
+        
+    }
+
+    void Update(std::string string_command) {
+        StringParser parser(string_command);
+        auto command = parser.ParseIntoVisualizerUpdatingCommand();
+        
+    }
+
     void Reset() {}
     
     void Visualize() {
@@ -14,7 +81,6 @@ public:
     }
 private:
     /* There is some shit below */
-
     static void DisplayFunc() {
         glClear(GL_COLOR_BUFFER_BIT);
         glColor3f(1.0, 0.0, 1.0); //fiol
@@ -26,7 +92,7 @@ private:
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
         glutInitWindowSize(WinWid, WinHei);
         glutInitWindowPosition(900, 0);
-        glutCreateWindow("Home");
+        glutCreateWindow("Window");
         glClearColor(1.0, 0.0, 1.0, 0.0);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);/*выбор режима прорисовки
                                                   полигонов. выбран дефолтный.*/
