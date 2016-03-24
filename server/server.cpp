@@ -1,138 +1,223 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <algorithm>
+#include <random>
+#include <functional>
+#include <time.h>
+
+
+using std::map;
 using std::string;
-enum WallType {NO, INTERIOR, OUTSIDE, EXIT};
-enum Direction {NORTH, EAST, SOUTH, WEST};
+using std::vector;
 
+enum Direction { TOP, BOTTOM, RIGHT, LEFT };
+enum SquareType { NORMAL, RIVER, PORTAL, ARSENAL, CLINIC };
 
-class Treasure {
+Direction GetOppositeDirection(Direction dir) {
+  switch (dir) {
+  case TOP:
+    return BOTTOM;
+  case BOTTOM:
+    return TOP;
+  case RIGHT:
+    return LEFT;
+  case LEFT:
+    return RIGHT;
+  }
+}
+
+struct Point {
 public:
   int x, y;
-  bool hold;
-  // bool true_treasure
-  Treasure(int x, int y):
-    x(x), y(y),
-    hold(false) { };
-  ~Treasure() {}
+  Point(int x_coord = 0, int y_coord = 0)
+    : x(x_coord), y(y_coord) {}
+  bool operator== (const Point &other) const {
+    return ((other.x == x) && (other.y == y));
+  }
 };
 
+Point GetRandomPoint(int size) {
+  // most likely, it's a temp function. now it's used for setting coords to Players.
+  srand(time(NULL));
+  int x = (rand() % size);
+  int y = (rand() % size);
+  return Point(x, y);
+}
+
+Point GetPointToThe(Point p, Direction dir) {
+  switch (dir) {
+  case TOP:
+    return Point(p.x, p.y + 1);
+  case BOTTOM:
+    return Point(p.x, p.y - 1);
+  case RIGHT:
+    return Point(p.x + 1, p.y);
+  case LEFT:
+    return Point(p.x - 1, p.y);
+  }
+}
+
+bool IsCorrectPoint(Point p, int size) {
+  return (p.x >= 0 && p.x < size && p.y >= 0 && p.y < size);
+}
 
 class Player {
 public:
+  Point coord;
   const string nickname;
-  int x; // стоит ли добавлять классс координат?
-  int y;
-  int health;
-  int bullets;
-  int bombs;
+  int health, bullets, bombs;
   bool has_treasure;
-  //Treasure& treasure;
-  Player(string nickname, int x, int y):
-    nickname(nickname),
-    x(x), y(y),
+  Player(Point coord, string nickname)
+    : nickname(nickname),
+    coord(coord),
     health(2),
     bullets(3),
     bombs(3),
-    has_treasure(false)
-  {
-    // сообщить текущую клетку
+    has_treasure(false) {}
+  bool is_alive() {
+    return health > 0;
   }
-
-};
-
-class BasicSquare {
-public:
-  BasicSquare() {}
-  virtual void effect(Player &player) { return; }
-  virtual void move_effect(int& x, int& y) { return; };
-  virtual ~BasicSquare(){}
-};
-
-
-class ExampleSquare: public BasicSquare {
-public:
-  ExampleSquare() {}
-  virtual void effect(Player &player) {
-    move_effect(player.x, player.y); // if not empty
-    std::cout << player.nickname << " moved to (57, 57)" << std::endl; // or return something?
+  bool operator==(const Player &other) const {
+    return other.nickname == nickname;
   }
-  virtual void move_effect(int& x, int& y) { // to process treasure movements
-    x = 57;
-    y = 57;
-  };
+  bool operator!=(const Player &other) const {
+    return other.nickname != nickname;
+  }
 };
 
-class Map {
-private:
-  std::vector<std::vector<BasicSquare*>> squares;
-  std::vector<std::vector<bool>> walls_vertical;
-  std::vector<std::vector<bool>> walls_horizontal;
-  std::pair<Direction, int> exit;
+class Square {
 public:
-  const int X;
-  const int Y;
-  Map(const int X, const int Y):
-    X(X), Y(Y),
-    squares(X),
-    walls_vertical(X - 1),
-    walls_horizontal(X),
-    exit(NORTH, 0) {
-      for (std::vector<BasicSquare*>& column: (this->squares)){
-        column.resize(Y);
-        for (auto& square: column) {
-          square = new(BasicSquare);
-        }
-      }
-      for (auto& column: (this->walls_vertical)){
-        column.resize(Y);
-        for (auto wall: column) {
-          wall = false;
-        }
-      }
-      for (auto& column: (this->walls_horizontal)){
-        column.resize(Y - 1);
-        for (auto wall: column) {
-          wall = false;
-        }
-      }
+  map<Direction, bool> has_wall_to_the;
+  bool has_treasure;
+  Point next; // stores next square position for river and portal squares.
+  SquareType type;
+  Square(SquareType type = NORMAL, Point next = Point(), bool has_treasure = false)
+    : has_treasure(has_treasure),
+    next(next),
+    type(type) {
+    for (auto it = has_wall_to_the.begin(); it != has_wall_to_the.end(); ++it) {
+      it->second = false;
     }
+  }
+  bool &operator[](Direction dir) {
+    return has_wall_to_the[dir];
+  }
+};
 
-  ~Map() {};
-  BasicSquare* get_square(int x, int y) {
-    return (this->squares)[x][y];
+typedef vector<vector<Square>> Map;
+typedef std::function<Map(int)> MapCreaterFunction;
+
+class Field {
+public:
+  Field(int size = 6) {
+    // creates empty field.
+    for (int i = 0; i < size; ++i) {
+      field_.push_back(vector<Square>(size, Square()));
+    }
+  }
+  Field(MapCreaterFunction mcf, int size = 6) {
+    field_ = mcf(size);
+  }
+  Square& operator[](Point p) {
+    return field_[p.x][p.y];
+  }
+  Square& operator[](const Player &p) {
+    return field_[p.coord.x][p.coord.y];
+  }
+  void Bash(Point coord, Direction direction) {
+    int size = field_.size();
+    (*this)[coord][direction] = false;
+    Point adjacent_point = GetPointToThe(coord, direction);
+    if (IsCorrectPoint(adjacent_point, field_.size())) {
+      (*this)[coord][GetOppositeDirection(direction)] = false;
+    }
+  }
+  int size() {  // name should be lowercase.
+    return field_.size();
   }
 
-  WallType wall_type(int x, int y, Direction dir) {
-    return NO;
+private:
+  Map field_;  // field_[0][0] is a Left Bottom corner.
+};
+
+class RequestQuery {};
+class ResponseQuery {};
+class Action {};
+
+class GameServer {
+public:
+  GameServer(int number_of_players = 2, int size = 6) {
+    Initialize(number_of_players, size);
+  }
+  void Initialize(int number_of_players = 2, int size = 6) {
+    field_ = Field(size);
+    players_ = vector<Player>();
+    for (int i = 0; i < number_of_players; ++i) {
+      string player_name = "Player" + std::to_string(i);
+      players_.push_back(Player(GetRandomPoint(size), player_name));
+    }
+    turn_ = 0;
+  }
+  ResponseQuery MakeRequest(RequestQuery query) {
+    // there we should unpack request and do proper actions.
+    return ResponseQuery();
   }
 
-  bool bomb(int x, int y, Direction dir) {
-    if (this->wall_type(x, y, dir) != OUTSIDE) {
-      // remove wall
+private:
+  Field field_;
+  vector<Player> players_;
+  int turn_;
+  void Shoot(int player_index, Direction direction) {
+
+  }
+  bool DestroyWall(int player_index, Direction direction) {
+    Player &player = players_[player_index];
+    if (player.bombs == 0) {
+      return false;
+    }
+    Point p = player.coord;
+    field_.Bash(p, direction);
+    player.bombs -= 1;
+    return true;
+  }
+  bool MovePlayer(int player_index, Direction direction) {
+    Player& player = players_[player_index];
+    Point player_coord = player.coord;
+    if (field_[player_coord][direction]) {
+      return false; // met wall
+    } else {
+      Point destination_point = GetPointToThe(player_coord, direction);
+      if (IsCorrectPoint(destination_point, field_.size())) {
+        player.coord = destination_point;
+        if (field_[player].type == RIVER || field_[player].type == PORTAL) {
+          player.coord = field_[player].next;
+        }
+      } else {
+        // Player is about to escape. does he carry the treasure?
+        if (player.has_treasure) {
+          // Player player wins. IDK how to write it best yet. ==========================
+        } else {
+          // We have to stop him, right? ================================================
+        }
+      }
       return true;
     }
-    return false;
+  }
+  void AttackSelfSquare(int player_index) {
+    Player &player = players_[player_index];
+    for (auto& pl : players_) {
+      if ((player.coord == pl.coord) && player != pl) {
+        pl.health -= 1;
+      }
+    }
   }
 };
-
-
 
 
 
 int main() {
-  Player player1("player1", 1, 1);
-  ExampleSquare square1;
-  Map map(12, 12);
-  //map.squares[3][5] = &square1;
-  //map.squares[3][5]->effect(player1);
-  //map.squares[2][1] = new(BasicSquare);
-  //map.squares[2][1]->effect(player1);
-  //map.get_square(3, 5) = new(ExampleSquare);
-  map.get_square(3, 5) -> effect(player1);
-  std::cout << player1.x << player1.y;
- // std::cout << map.walls_horisontal[8][7];
 
   return 0;
-
 }
