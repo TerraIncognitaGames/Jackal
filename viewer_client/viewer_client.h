@@ -9,11 +9,13 @@
 // and draw this state.
 class CurrentScene {
 public:
+    // Singleton.
     static CurrentScene & Instance() {
         static CurrentScene scene;
         return scene;
     }
 
+    // Initializes current scene data.
     void Initialize(double block_x, double block_y) {
         std::lock_guard<std::mutex> lock(mutex);
         green_block.SetCoordinates(block_x, block_y);
@@ -25,7 +27,7 @@ public:
         green_block.SetCoordinates(block_x, block_y);
     }
 
-    // Function for glutDisplayFunc.
+    // Function for glutDisplayFunc called for drawing.
     void Draw() {
         std::lock_guard<std::mutex> lock(mutex);
         green_block.Draw();
@@ -68,6 +70,7 @@ private:
 // Realizes the class working with Glut.
 class Visualizer {
 public:
+    // Singleton.
     static Visualizer & Instance() {
         static Visualizer visualizer;
         return visualizer;
@@ -80,6 +83,7 @@ public:
         InitializeGlut();
     }
 
+    // Starts Glut main loop.
     static void Visualize() {
         glutMainLoop();
     }
@@ -92,6 +96,11 @@ public:
         glFlush();
     }
 private:
+    static const int32_t kMsForFrame = 42; // ~(1000 ms / 24 fps) 
+    static const int32_t glut_window_width = 300;
+    static const int32_t glut_window_height = 300;
+    static const int32_t glut_window_position_x = 900;
+    static const int32_t glut_window_position_y = 200;
 
     Visualizer() {}
     ~Visualizer() {}
@@ -152,35 +161,33 @@ private:
         std::string string_;
     };
 
+    // Function for glutDisplayFunc.
     static void DrawScene() {
         glClear(GL_COLOR_BUFFER_BIT);
         CurrentScene::Instance().Draw();
         glFlush();
     }
 
-    static void GlutTimerFunction(int NOT_USED) {
-        glutTimerFunc(42, GlutTimerFunction, 0);
+    // Function for glutTimerFunc.
+    static void GlutTimerFunction(int n_timer) {
+        glutTimerFunc(kMsForFrame, GlutTimerFunction, n_timer);
     }
 
     static void InitializeGlut() {
-        int WinWid = 400;
-        int WinHei = 400;
+        std::string glut_window_name = "Window_Name";
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-        glutInitWindowSize(WinWid, WinHei);
+        glutInitWindowSize(glut_window_width, glut_window_height);
 
-        //void glutReshapeWindow(int width, int height)// оконный режим
-        glutInitWindowPosition(900, 200);
-        int descr = glutCreateWindow("Window");
-        std::cout << descr << std::endl;;
-        glClearColor(0.0, 0.0, 0.0, 0.0);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);/*выбор режима прорисовки
-                                                  полигонов. выбран дефолтный.*/
-        glMatrixMode(GL_PROJECTION); //Установить проекцию
+        glutInitWindowPosition(glut_window_position_x, glut_window_position_y);
+        glutCreateWindow(glut_window_name.c_str());
+        glClearColor(0.0, 0.0, 0.0, 0.0); // black
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        // glutFullScreen();
-        glutReshapeWindow(300, 300);
         glOrtho(0.0, 10, 0.0, 10, -1.0, 1.0);
         glutDisplayFunc(DrawScene);
+        // glutFullScreen();
+        // glutReshapeWindow(300, 300);
         // glutKeyboardFunc(myGlutKeyboardFunc);
         // glutSpecialFunc(myGlutSpecialFunc);
         glutTimerFunc(0, GlutTimerFunction, 0);
