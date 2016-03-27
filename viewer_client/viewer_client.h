@@ -2,123 +2,188 @@
 #include <glut.h>
 #include <string>
 #include <vector>
+#include <thread>
+#include <mutex>
 
-// Realizes the command template for Visualizer.
-class VisualizerCommand {
+// Stores current state of game field, can update 
+// and draw this state.
+class CurrentScene {
 public:
-
-private:
-
-};
-
-// Realizes the class can be taked by Visualizer for
-// initializing.
-class VisualizerInitializingCommand : public VisualizerCommand {
-public:
-    VisualizerInitializingCommand() {}
-
-private:
-
-};
-
-// Realizes the class can be taked by Visualizer for
-// updating.
-class VisualizerUpdatingCommand : public VisualizerCommand {
-public:
-    VisualizerUpdatingCommand() {}
-
-private:
-
-};
-
-// Transforms string into visualizer command.
-class StringParser {
-public:
-    StringParser(std::string string) : string_(string) {}
-
-    VisualizerInitializingCommand ParseIntoVisualizerInitializingCommand() {
-        VisualizerInitializingCommand command;
-        // future realization depends on the form of command
+    static CurrentScene & Instance() {
+        static CurrentScene scene;
+        return scene;
     }
 
-    VisualizerUpdatingCommand ParseIntoVisualizerUpdatingCommand() {
-        VisualizerUpdatingCommand command;
-        // future realization depends on the form of command
+    void Initialize(double block_x, double block_y) {
+        std::lock_guard<std::mutex> lock(mutex);
+        green_block.SetCoordinates(block_x, block_y);
     }
 
+    // Updates current scene data.
+    void Update(double block_x, double block_y) {
+        std::lock_guard<std::mutex> lock(mutex);
+        green_block.SetCoordinates(block_x, block_y);
+    }
+
+    // Function for glutDisplayFunc.
+    void Draw() {
+        std::lock_guard<std::mutex> lock(mutex);
+        green_block.Draw();
+        std::cout << "green_block.Draw();" << std::endl;
+    }
 private:
-    // Splits string by " "
-    std::vector<std::string> Split() {
-        std::vector<std::string> strings;
+    // Just a green square.
+    class GreenBlock {
+    public:
+        GreenBlock() {}
+        GreenBlock(double x, double y) : x_(x), y_(y) {}
+        void SetCoordinates(double x, double y) {
+            x_ = x;
+            y_ = y;
+        }
+        void Draw() {
+            glColor3f(0.0, 0.64, 0.0);
+            glBegin(GL_POLYGON);
+            glVertex3f(x_, y_, 0.0);
+            glVertex3f(x_ + 1, y_, 0.0);
+            glVertex3f(x_ + 1, y_ + 1, 0.0);
+            glVertex3f(x_, y_ + 1, 0.0);
+            glEnd();
+        }
+    private:
+        double x_, y_;
+    };
 
-        return strings;
-    }
+    std::mutex mutex;
+    GreenBlock green_block;
 
-    std::string string_;
+    CurrentScene() {}
+    ~CurrentScene() {}
+    CurrentScene(const CurrentScene & other) = delete;
+    CurrentScene & operator=(const CurrentScene & other) = delete;
+
 };
 
-// Realizes the drawer using singleton.
+
+// Realizes the class working with Glut.
 class Visualizer {
 public:
     static Visualizer & Instance() {
         static Visualizer visualizer;
         return visualizer;
     }
-    static void Initialize(std::string string_command) {
-        StringParser parser(string_command);
+
+    static void Initialize(int32_t block_x, int32_t block_y) {
+        // VisualizerCommandParser parser(string_command);
         //auto command = parser.ParseIntoVisualizerInitializingCommand();
-        
+        CurrentScene::Instance().Initialize(block_x, block_y);
+        InitializeGlut();
     }
+
     static void Visualize() {
-        myGlutInit();
-        glutDisplayFunc(DisplayFunc);
         glutMainLoop();
     }
+
+    static void UpdateScene(double block_x, double block_y) {
+        // VisualizerCommandParser parser(string_command);
+        // auto command = parser.ParseIntoVisualizerUpdatingCommand();
+        CurrentScene::Instance().Update(block_x, block_y);
+        glutPostRedisplay();
+        glFlush();
+    }
 private:
-    // Realizes one game field drawn on the computer screen.
-    class GameField {
-
-    };
-
-    static std::vector<GameField> game_fields_;
 
     Visualizer() {}
     ~Visualizer() {}
-    Visualizer(const Visualizer & other) {}
-    Visualizer & operator=(const Visualizer & other) {}
+    Visualizer(const Visualizer & other) = delete;
+    Visualizer & operator=(const Visualizer & other) = delete;
 
-    static void Update(std::string string_command) {
-        StringParser parser(string_command);
-        auto command = parser.ParseIntoVisualizerUpdatingCommand();
+    // Realizes the command template for Visualizer.
+    class VisualizerCommand {
+    public:
 
-    }
+    private:
 
-    static void DisplayFunc() {
+    };
+
+    // Realizes the class can be taked by Visualizer for
+    // initializing.
+    class VisualizerInitializingCommand : public VisualizerCommand {
+    public:
+        VisualizerInitializingCommand() {}
+
+    private:
+
+    };
+
+    // Realizes the class can be taked by Visualizer for
+    // updating.
+    class VisualizerUpdatingCommand : public VisualizerCommand {
+    public:
+        VisualizerUpdatingCommand() {}
+
+    private:
+
+    };
+
+    // Transforms string into visualizer command.
+    class VisualizerCommandParser {
+    public:
+        VisualizerCommandParser(std::string string) : string_(string) {}
+
+        VisualizerInitializingCommand ParseIntoVisualizerInitializingCommand() {
+            VisualizerInitializingCommand command;
+            // future realization depends on the form of command
+        }
+
+        VisualizerUpdatingCommand ParseIntoVisualizerUpdatingCommand() {
+            VisualizerUpdatingCommand command;
+            // future realization depends on the form of command
+        }
+
+    private:
+        // Splits string by delimiter
+        std::vector<std::string> Split(char delimiter) {
+            std::vector<std::string> strings;
+
+            return strings;
+        }
+
+        std::string string_;
+    };
+
+    static void DrawScene() {
         glClear(GL_COLOR_BUFFER_BIT);
-        // glColor3f(1.0, 1.0, 1.0);
-
+        CurrentScene::Instance().Draw();
         glFlush();
     }
-    static void myGlutInit() {
+
+    static void GlutTimerFunction(int NOT_USED) {
+        glutTimerFunc(42, GlutTimerFunction, 0);
+    }
+
+    static void InitializeGlut() {
         int WinWid = 400;
         int WinHei = 400;
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
         glutInitWindowSize(WinWid, WinHei);
-        
+
         //void glutReshapeWindow(int width, int height)// оконный режим
-        glutInitWindowPosition(0, 0);
-        glutCreateWindow("Window");
-        glClearColor(1.0, 1.0, 1.0, 0.0);
+        glutInitWindowPosition(900, 200);
+        int descr = glutCreateWindow("Window");
+        std::cout << descr << std::endl;;
+        glClearColor(0.0, 0.0, 0.0, 0.0);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);/*выбор режима прорисовки
                                                   полигонов. выбран дефолтный.*/
         glMatrixMode(GL_PROJECTION); //Установить проекцию
         glLoadIdentity();
-        // glutFullScreen(); // полноэкранный режим
-        glutReshapeWindow(1300, 800);
-        // int GameFieldWid = 200;
-        // int GameFieldHei = 300;
-        // glOrtho(0.0, GameFieldWid, 0.0, GameFieldHei, -1.0, 1.0);
+        // glutFullScreen();
+        glutReshapeWindow(300, 300);
+        glOrtho(0.0, 10, 0.0, 10, -1.0, 1.0);
+        glutDisplayFunc(DrawScene);
         // glutKeyboardFunc(myGlutKeyboardFunc);
-        //glutSpecialFunc(myGlutSpecialFunc);
+        // glutSpecialFunc(myGlutSpecialFunc);
+        glutTimerFunc(0, GlutTimerFunction, 0);
     }
+
 };
