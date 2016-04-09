@@ -170,6 +170,7 @@ typedef std::function<Map(int)> MapCreaterFunction;
 /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
 std::vector<SquareType> MapFieldCreaterVector;
 insert (MapCreaterVector.end(), 64, FIELD);
+/// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
 insert (MapCreaterVector.end(), 5, JUNGLE);
 insert (MapCreaterVector.end(), 4, DESERT);
 insert (MapCreaterVector.end(), 2, BOG);
@@ -181,8 +182,10 @@ insert (MapCreaterVector.end(), 2, HOARSE);
 insert (MapCreaterVector.end(), 2, FORTRESS);
 insert (MapCreaterVector.end(), 1, ABORIGINE);
 insert (MapCreaterVector.end(), 1, CANNIBAL);
-insert (MapCreaterVector.end(), 2, GUN); /// ориентация
-insert (MapCreaterVector.end(), 21, ARROW); /// ориентация и вариации (7х3)
+insert (MapCreaterVector.end(), 2, GUN);
+/// ориентация
+insert (MapCreaterVector.end(), 21, ARROW);
+/// ориентация и вариации (7х3)
 
 
 class Field {
