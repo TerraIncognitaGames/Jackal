@@ -16,7 +16,7 @@ using std::string;
 using std::vector;
 
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { NORMAL, RIVER, PORTAL, ARSENAL, CLINIC };
+enum SquareType { HIDDEN };
 
 /// классы :
 
@@ -101,6 +101,7 @@ public:
 };
 
 class Player {
+
 };
 
 class Square {
