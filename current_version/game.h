@@ -16,7 +16,8 @@ using std::string;
 using std::vector;
 
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { HIDDEN };
+enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE, CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE };
+
 
 class Point {
 public:
@@ -57,11 +58,31 @@ public:
 
 };
 
+
+class Action {};
+
 class Player {
 
 };
 
 class Square {
+private :
+  size_t gold_;
+  size_t num_of_steps_;
+  SquareType type_;
+public :
+  size_t gold() {
+    return gold;
+  }
+  size_t num_of_steps() {
+    return num_of_steps_;
+  }
+  Action effect(Pirate &pirate) {
+  }
+  SquareType type {
+    return type_;
+  }
+
 
 };
 
@@ -104,7 +125,6 @@ private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
 };
 
-
 /// классы
 
 /// pirate
@@ -113,6 +133,7 @@ private :
   bool gold_;
   Point coordinate_;
   size_t position_on_square_;
+  bool dead_;
 
 public :
   bool gold() {
@@ -124,8 +145,6 @@ public :
   size_t position_on_square() {
     return position_on_square_;
   }
-
-
 
 }
 /// ship
@@ -147,8 +166,8 @@ public :
 /// baloon
 /// gun
 
-/// hole
-/// rum
+// after_all : hole
+// after_all : rum
 /// cannibal
 
 /// fortress
@@ -166,7 +185,7 @@ public :
 
 class RequestQuery {};
 // class ResponseQuery {};
-class Action {};
+
 
 
 #endif // GAME_H_INCLUDED
