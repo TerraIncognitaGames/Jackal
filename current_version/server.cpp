@@ -3,6 +3,7 @@
 
 
 int main() {
-
+  SquareBase* s=new(SquareBase);
+  std::cout << (new SquareBase)->type();
   return 0;
 }

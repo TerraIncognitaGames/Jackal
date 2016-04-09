@@ -16,7 +16,8 @@ using std::string;
 using std::vector;
 
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE, CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE };
+enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE,
+                  CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 
 
 class Point {
@@ -59,11 +60,54 @@ public:
 };
 
 
-class Action {};
+class Pirate {
+private :
+  bool gold_;
+  Point coordinate_;
+  size_t position_on_square_;
+  bool dead_;
+
+public :
+  bool gold() {
+    return gold_;
+  }
+  Point coordinate() {
+    return coordinate_;
+  }
+  size_t position_on_square() {
+    return position_on_square_;
+  }
+
+};
+
+
+class Action {
+
+};
 
 class Player {
 
 };
+
+class SquareBase {
+private :
+  static SquareType type_;
+public :
+  SquareBase() {
+  }
+
+  virtual Action effect(Pirate &pirate) {
+    std::cout << "error";
+  }
+
+  SquareType type() {
+    return type_;
+  }
+
+};
+SquareType SquareBase::type_ = HIDDEN;
+typedef SquareBase HiddenSquare;
+
 
 class Square {
 private :
@@ -72,17 +116,31 @@ private :
   SquareType type_;
 public :
   size_t gold() {
-    return gold;
+    return gold_;
   }
+
   size_t num_of_steps() {
     return num_of_steps_;
   }
-  Action effect(Pirate &pirate) {
+
+  virtual Action effect(Pirate &pirate) {
   }
-  SquareType type {
+
+  SquareType type() {
     return type_;
   }
 
+
+};
+
+
+class Ship: public SquareBase {
+private:
+  Point coordinate_;// or store it in player?
+public:
+  Point coordinate() {
+    return coordinate_;
+  }
 
 };
 
@@ -125,29 +183,6 @@ private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
 };
 
-/// классы
-
-/// pirate
-class Pirate {
-private :
-  bool gold_;
-  Point coordinate_;
-  size_t position_on_square_;
-  bool dead_;
-
-public :
-  bool gold() {
-    return gold;
-  }
-  Point coordinate() {
-    return coordinate_;
-  }
-  size_t position_on_square() {
-    return position_on_square_;
-  }
-
-}
-/// ship
 
 
 
