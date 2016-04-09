@@ -15,9 +15,23 @@ using std::map;
 using std::string;
 using std::vector;
 
+/// If you change enum, don't forget to update functions.
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
 enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE,
                   CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
+
+bool isMovingCellType(SquareType type) {
+  switch (type){
+    case ARROW:
+    case GUN:
+    case HOARSE:
+    case BALOON:
+    case ICE:
+      return true;
+    default:
+      return false;
+  }
+}
 
 
 class Point {
