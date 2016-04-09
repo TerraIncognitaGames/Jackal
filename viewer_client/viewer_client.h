@@ -1,6 +1,7 @@
 #pragma once
 #include <gl\glut.h>
 #include <gl\glaux.h>
+#include <gl\glu.h>
 #include <string>
 #include <vector>
 #include <thread>
@@ -37,7 +38,6 @@ public:
         std::lock_guard<std::mutex> lock(mutex);
         green_block.Draw();
         DrawObject(ship);
-        auxDIBImageLoad();
     }
 
 private:
@@ -67,7 +67,34 @@ private:
     template<class ObjectType>
     void DrawObject(ObjectType object) {
         if (typeid(ObjectType) == typeid(Ship)) {
-            // Draw.
+            // Загрузка картинки
+            // GLuint	texture[1];
+            // AUX_RGBImageRec *texture1;
+            AUX_RGBImageRec * image = auxDIBImageLoad("Textures\\ship.bmp");
+            glRasterPos2d(-4.5, -3);                    // нижний левый угол
+            glPixelZoom(1, 1);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);         // выравнивание
+            glDrawPixels(image->sizeX, image->sizeY, // ширина и высота
+                GL_RGB, GL_UNSIGNED_BYTE,      // формат и тип
+                image->data);     // сами данные
+            // Создание текстуры
+            /*glGenTextures(1, &texture[0]);
+            glBindTexture(GL_TEXTURE_2D, texture[0]);
+            //
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            //
+            glTexImage2D(GL_TEXTURE_2D, 0, 3, texture1->sizeX, texture1->sizeY, 0,
+                GL_RGB, GL_UNSIGNED_BYTE, texture1->data);
+
+            glEnable(GL_TEXTURE_2D);		// Разрешение наложение текстуры
+
+            glBegin(GL_POLYGON);
+            glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0, -1.0, 0.0);	// Низ лево
+            glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0, -1.0, 0.0);	// Низ право
+            glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0, 1.0, 0.0);	// Верх право
+            glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0, 1.0, 0.0);	// Верх лево
+            glEnd();*/
         }
     }
 
@@ -110,6 +137,7 @@ public:
         glutPostRedisplay();
         glFlush();
     }
+
 private:
     static const int32_t kMsForFrame = 42; // ~(1000 ms / 24 fps) 
     static const int32_t glut_window_width = 300;
@@ -121,14 +149,6 @@ private:
     ~Visualizer() {}
     Visualizer(const Visualizer & other) = delete;
     Visualizer & operator=(const Visualizer & other) = delete;
-
-    // Realizes the command template for Visualizer.
-    class VisualizerCommand {
-    public:
-
-    private:
-
-    };
 
     // Function for glutDisplayFunc.
     static void DrawScene() {
