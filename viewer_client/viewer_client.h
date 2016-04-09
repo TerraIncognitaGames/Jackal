@@ -1,9 +1,14 @@
 #pragma once
-#include <glut.h>
+#include <gl\glut.h>
+#include <gl\glaux.h>
 #include <string>
 #include <vector>
 #include <thread>
 #include <mutex>
+
+class Ship {
+
+} ship;
 
 // Stores current state of game field, can update 
 // and draw this state.
@@ -31,8 +36,10 @@ public:
     void Draw() {
         std::lock_guard<std::mutex> lock(mutex);
         green_block.Draw();
-        std::cout << "green_block.Draw();" << std::endl;
+        DrawObject(ship);
+        auxDIBImageLoad();
     }
+
 private:
     // Just a green square.
     class GreenBlock {
@@ -44,6 +51,7 @@ private:
             y_ = y;
         }
         void Draw() {
+            std::cout << "green_block.Draw();" << std::endl;
             glColor3f(0.0, 0.64, 0.0);
             glBegin(GL_POLYGON);
             glVertex3f(x_, y_, 0.0);
@@ -58,7 +66,7 @@ private:
 
     template<class ObjectType>
     void DrawObject(ObjectType object) {
-        if (typeid(ObjectType) == typeid(ObjectType)) {
+        if (typeid(ObjectType) == typeid(Ship)) {
             // Draw.
         }
     }
