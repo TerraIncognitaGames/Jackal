@@ -7,7 +7,7 @@
 #include <ctime>
 #include <string>
 #include <thread>
-#include "C:\Files\Programming\GitHub\Jackal\current_version\viewer_client.h"
+#include "viewer_client.h"
 
 struct Visi {
     void operator()() {
