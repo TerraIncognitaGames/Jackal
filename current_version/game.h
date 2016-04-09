@@ -154,15 +154,6 @@ public :
 /// fortress
 /// aborigine
 
-/// gold
-
-
-
-
-
-
-
-
 
 class RequestQuery {};
 // class ResponseQuery {};
