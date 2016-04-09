@@ -18,7 +18,10 @@ using std::vector;
 /// If you change enum, don't forget to update functions.
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
 enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE,
-                  CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
+                  CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP }; /// Эдик! Стрелочек тоже 7 видов, плохо их -- одним элементом:(
+/// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
+                  /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
+                  /// очень не хочется заморачиваться с угловыми
 
 bool isMovingCellType(SquareType type) {
   switch (type){
@@ -27,6 +30,7 @@ bool isMovingCellType(SquareType type) {
     case HOARSE:
     case BALOON:
     case ICE:
+    case CROCODILE:/// возвращает тебя на клетку, с которой ты ходил
       return true;
     default:
       return false;
@@ -158,8 +162,28 @@ public:
 
 };
 
+
 typedef vector<vector<Square> > Map;
 typedef std::function<Map(int)> MapCreaterFunction;
+
+/// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
+/// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
+std::vector<SquareType> MapFieldCreaterVector;
+insert (MapCreaterVector.end(), 64, FIELD);
+insert (MapCreaterVector.end(), 5, JUNGLE);
+insert (MapCreaterVector.end(), 4, DESERT);
+insert (MapCreaterVector.end(), 2, BOG);
+insert (MapCreaterVector.end(), 1, MOUNTAIN);
+insert (MapCreaterVector.end(), 2, BALOON);
+insert (MapCreaterVector.end(), 4, CROCODILE);
+insert (MapCreaterVector.end(), 6, ICE);
+insert (MapCreaterVector.end(), 2, HOARSE);
+insert (MapCreaterVector.end(), 2, FORTRESS);
+insert (MapCreaterVector.end(), 1, ABORIGINE);
+insert (MapCreaterVector.end(), 1, CANNIBAL);
+insert (MapCreaterVector.end(), 2, GUN); /// ориентация
+insert (MapCreaterVector.end(), 21, ARROW); /// ориентация и вариации (7х3)
+
 
 class Field {
 public:
