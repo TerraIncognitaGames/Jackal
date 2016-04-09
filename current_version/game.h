@@ -16,49 +16,7 @@ using std::string;
 using std::vector;
 
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { NORMAL, RIVER, PORTAL, ARSENAL, CLINIC };
-
-/// классы :
-
-/// pirate
-class Pirate {
-private :
-  bool gold_;
-
-public :
-  bool gold() {
-    return gold;
-  }
-
-}
-/// ship
-
-/// water
-/// arrow
-/// hoarse
-/// ice
-/// crocodile
-
-/// baloon
-/// gun
-
-/// field
-/// jungle
-/// desert
-/// bog
-/// mountain
-
-/// hole
-/// rum
-/// cannibal
-
-/// fortress
-/// aborigine
-
-/// gold
-
-
-
+enum SquareType { HIDDEN };
 
 
 class Point {
@@ -145,6 +103,9 @@ public:
 private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
 };
+
+
+
 
 class RequestQuery {};
 // class ResponseQuery {};
