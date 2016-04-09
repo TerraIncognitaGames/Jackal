@@ -1,9 +1,14 @@
 #pragma once
-#include <glut.h>
+#include <gl\glut.h>
+#include <gl\glaux.h>
 #include <string>
 #include <vector>
 #include <thread>
 #include <mutex>
+
+class Ship {
+
+} ship;
 
 // Stores current state of game field, can update 
 // and draw this state.
@@ -31,8 +36,10 @@ public:
     void Draw() {
         std::lock_guard<std::mutex> lock(mutex);
         green_block.Draw();
-        std::cout << "green_block.Draw();" << std::endl;
+        DrawObject(ship);
+        auxDIBImageLoad();
     }
+
 private:
     // Just a green square.
     class GreenBlock {
@@ -44,6 +51,7 @@ private:
             y_ = y;
         }
         void Draw() {
+            std::cout << "green_block.Draw();" << std::endl;
             glColor3f(0.0, 0.64, 0.0);
             glBegin(GL_POLYGON);
             glVertex3f(x_, y_, 0.0);
@@ -55,6 +63,13 @@ private:
     private:
         double x_, y_;
     };
+
+    template<class ObjectType>
+    void DrawObject(ObjectType object) {
+        if (typeid(ObjectType) == typeid(Ship)) {
+            // Draw.
+        }
+    }
 
     std::mutex mutex;
     GreenBlock green_block;
@@ -113,52 +128,6 @@ private:
 
     private:
 
-    };
-
-    // Realizes the class can be taked by Visualizer for
-    // initializing.
-    class VisualizerInitializingCommand : public VisualizerCommand {
-    public:
-        VisualizerInitializingCommand() {}
-
-    private:
-
-    };
-
-    // Realizes the class can be taked by Visualizer for
-    // updating.
-    class VisualizerUpdatingCommand : public VisualizerCommand {
-    public:
-        VisualizerUpdatingCommand() {}
-
-    private:
-
-    };
-
-    // Transforms string into visualizer command.
-    class VisualizerCommandParser {
-    public:
-        VisualizerCommandParser(std::string string) : string_(string) {}
-
-        VisualizerInitializingCommand ParseIntoVisualizerInitializingCommand() {
-            VisualizerInitializingCommand command;
-            // future realization depends on the form of command
-        }
-
-        VisualizerUpdatingCommand ParseIntoVisualizerUpdatingCommand() {
-            VisualizerUpdatingCommand command;
-            // future realization depends on the form of command
-        }
-
-    private:
-        // Splits string by delimiter
-        std::vector<std::string> Split(char delimiter) {
-            std::vector<std::string> strings;
-
-            return strings;
-        }
-
-        std::string string_;
     };
 
     // Function for glutDisplayFunc.
