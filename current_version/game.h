@@ -1,3 +1,6 @@
+#ifndef GAME_H_INCLUDED
+#define GAME_H_INCLUDED
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -55,9 +58,6 @@ public:
 
 };
 
-
-
-
 class Player {
 };
 
@@ -109,8 +109,4 @@ class RequestQuery {};
 class Action {};
 
 
-
-int main() {
-
-  return 0;
-}
+#endif // GAME_H_INCLUDED
