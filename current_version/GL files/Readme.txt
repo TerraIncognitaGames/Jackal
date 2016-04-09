@@ -2,7 +2,7 @@
 2. В include\gl скопируйте glut.h и glaux.h.
 3. В lib скопируйте glut.lib и glaux.lib.
 
-У меня это примерно так: D\Program Files\Microsoft Visual Studio 9.0\VC\include\gl и
+У меня это примерно так: D\Program Files\Microsoft Visual Studio 9.0\VC\include\GL и
 D:\Program Files\Microsoft Visual Studio 9.0\VC\lib
 
 Теперь в наших VC++ проектах можно использовать glut и glaux. Для этого нужно просто подключить вначале проекта загаловочный файлы

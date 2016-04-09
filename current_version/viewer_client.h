@@ -2,9 +2,9 @@
 // #pragma comment( lib, "glut32.lib" )
 // #pragma comment( lib, "glaux.lib" )
 
-#include "glut.h"
-#include "glaux.h"
-#include "glu.h"
+#include <GL\glut.h>
+#include <GL\glaux.h>
+#include <GL\glu.h>
 #include <string>
 #include <vector>
 #include <thread>
