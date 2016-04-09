@@ -56,6 +56,13 @@ private:
         double x_, y_;
     };
 
+    template<class ObjectType>
+    void DrawObject(ObjectType object) {
+        if (typeid(ObjectType) == typeid(ObjectType)) {
+            // Draw.
+        }
+    }
+
     std::mutex mutex;
     GreenBlock green_block;
 
@@ -113,52 +120,6 @@ private:
 
     private:
 
-    };
-
-    // Realizes the class can be taked by Visualizer for
-    // initializing.
-    class VisualizerInitializingCommand : public VisualizerCommand {
-    public:
-        VisualizerInitializingCommand() {}
-
-    private:
-
-    };
-
-    // Realizes the class can be taked by Visualizer for
-    // updating.
-    class VisualizerUpdatingCommand : public VisualizerCommand {
-    public:
-        VisualizerUpdatingCommand() {}
-
-    private:
-
-    };
-
-    // Transforms string into visualizer command.
-    class VisualizerCommandParser {
-    public:
-        VisualizerCommandParser(std::string string) : string_(string) {}
-
-        VisualizerInitializingCommand ParseIntoVisualizerInitializingCommand() {
-            VisualizerInitializingCommand command;
-            // future realization depends on the form of command
-        }
-
-        VisualizerUpdatingCommand ParseIntoVisualizerUpdatingCommand() {
-            VisualizerUpdatingCommand command;
-            // future realization depends on the form of command
-        }
-
-    private:
-        // Splits string by delimiter
-        std::vector<std::string> Split(char delimiter) {
-            std::vector<std::string> strings;
-
-            return strings;
-        }
-
-        std::string string_;
     };
 
     // Function for glutDisplayFunc.
