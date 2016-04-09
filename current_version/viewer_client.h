@@ -1,4 +1,7 @@
 #pragma once
+// #pragma comment( lib, "glut32.lib" ) 
+// #pragma comment( lib, "glaux.lib" )
+
 #include <gl\glut.h>
 #include <gl\glaux.h>
 #include <gl\glu.h>
@@ -69,14 +72,14 @@ private:
         if (typeid(ObjectType) == typeid(Ship)) {
             // Загрузка картинки
             // GLuint	texture[1];
-            // AUX_RGBImageRec *texture1;
-            AUX_RGBImageRec * image = auxDIBImageLoad("Textures\\ship.bmp");
+            /*AUX_RGBImageRec * image;
+            image = auxDIBImageLoad("Textures\\ship.bmp");
             glRasterPos2d(-4.5, -3);                    // нижний левый угол
             glPixelZoom(1, 1);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);         // выравнивание
             glDrawPixels(image->sizeX, image->sizeY, // ширина и высота
                 GL_RGB, GL_UNSIGNED_BYTE,      // формат и тип
-                image->data);     // сами данные
+                image->data);     // сами данные**/
             // Создание текстуры
             /*glGenTextures(1, &texture[0]);
             glBindTexture(GL_TEXTURE_2D, texture[0]);
