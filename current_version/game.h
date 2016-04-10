@@ -15,9 +15,11 @@ using std::map;
 using std::string;
 using std::vector;
 
+const size_t sizeOfIsland = 11; // без воды
+
 /// If you change enum, don't forget to update functions.
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
+enum SquareType { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
                   CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP }; /// Эдик! Стрелочек тоже 7 видов, плохо их -- одним элементом:(
 /// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
                   /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
@@ -26,9 +28,9 @@ enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARR
                   /// Ed: Яму не тяжело будет добавить. Смолет думаю тоже.
                   /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
                   /// В рисовалке может быть увеличим количество типов.
-
-
-bool isMovingCellType(SquareType type) {
+enum EffectOfSquare { STOP, GOON, ASK, DEAD };
+/*
+EffectOfSquare effectOfCellType(SquareType type) {
   switch (type){
     case SINGLEARROW:
     case ARROWS:
@@ -41,7 +43,7 @@ bool isMovingCellType(SquareType type) {
     default:
       return false;
   }
-}
+}*/
 
 
 class Point {
@@ -92,6 +94,13 @@ private :
   bool dead_;
 
 public :
+  Pirate(Point coord)
+    : gold_(0)
+    , coordinate_(coord)
+    , position_on_square_(0)
+    , dead_(false) {
+      std::cout << "Pirate created" << std::endl;
+    }
   bool gold() {
     return gold_;
   }
@@ -100,6 +109,11 @@ public :
   }
   size_t position_on_square() {
     return position_on_square_;
+  }
+  void kill() {
+    dead_ = true;
+    gold_ = false;
+    position_on_square_ = 0;
   }
 
 };
@@ -116,12 +130,13 @@ class Player {
 class SquareBase {
 private :
   static SquareType type_;
+  bool explored_; /// чтобы сервер мог следить за циклами
 public :
   SquareBase() {
   }
 
-  virtual Action effect(Pirate &pirate) {
-    std::cout << "error";
+  virtual EffectOfSquare effect(Pirate &pirate) {
+    std::cout << "error: effect of unexplored";
   }
 
   SquareType type() {
@@ -129,7 +144,7 @@ public :
   }
 
 };
-SquareType SquareBase::type_ = HIDDEN;
+SquareType SquareBase::type_ = UNEXPLORED;
 typedef SquareBase HiddenSquare;
 
 
@@ -147,7 +162,8 @@ public :
     return num_of_steps_;
   }
 
-  virtual Action effect(Pirate &pirate) {
+  virtual EffectOfSquare effect(Pirate &pirate) {
+    return STOP;
   }
 
   SquareType type() {
@@ -169,15 +185,19 @@ public:
 };
 
 
-class Map: public vector<vector<SquareBase*> > {
+/// TODO: Factory!
 
-  Map()
-    : vector<vector<SquareBase*> >(0){
+class Map: public vector<vector<SquareBase*> > {
+public:
+  Map(size_t size = sizeOfIsland + 2)
+    : vector<vector<SquareBase*> >(0)
+    {
       /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
       /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
       std::vector<SquareType> SquareTypesForMapCreation;
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
-      /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта) /// в конструктор клетки
+      /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
+      /// в конструктор клетки
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
@@ -195,25 +215,23 @@ class Map: public vector<vector<SquareBase*> > {
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
       /// ориентация и вариации (7х3) -//-
       /// эти настройки нужно будет вынести из этой функции в другое место
-  }
+      for (int i = 0; i < size; ++i) {
+        push_back(std::vector<SquareBase*>(size, new SquareBase));
+      }
+      std::cout << "Map constructor" << std::endl;
+    }
+
 };
 
 
-class Field {
+class GameHolder {
 public:
-  Field(int size = 6) {
-    // creates empty field.
-    for (int i = 0; i < size; ++i) {
-      map_.push_back(vector<SquareBase*>(size, new BaseSquare));
-    }
+  GameHolder(size_t size = sizeOfIsland):
+    map_(size) {
+    std::cout << "Field constructor" << std::endl;
   }
 
-  Field(int size = 6):
-    map(size) {
-
-  }
-
-  Square& operator[](Point p) {
+  SquareBase* operator[](Point p) {
     return map_[p.x][p.y];
   }
   /*
