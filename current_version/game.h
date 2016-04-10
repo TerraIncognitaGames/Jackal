@@ -169,9 +169,17 @@ public :
 
 class Ship {
 public:
-  Ship(Point coord) {
+  Ship(Point coord)
+  : coordinate_(coord){
 
   }
+
+  Point coordinate() {
+    return coordinate_;
+  }
+private:
+  Point coordinate_;// or store it in player?
+
 };
 
 class Action {
@@ -187,8 +195,8 @@ public:
 
   Player(string id, Point ship_coord)
     : id(id)
-    , pirates(0)
-    , ship(ship_coord) {
+    , pirates()
+    , ship(new Ship(ship_coord)) {
       for (size_t i=0; i < numberOfPirates; ++i){
         pirates.push_back(Pirate(ship_coord));
       }
@@ -198,20 +206,12 @@ public:
   Action getAction() {
     int i;
     std::cin >> i;
-    return
+
   }
 
 };
 
-class Ship: public SquareBase {
-private:
-  Point coordinate_;// or store it in player?
-public:
-  Point coordinate() {
-    return coordinate_;
-  }
 
-};
 
 typedef std::pair<Pirate*, Point> Move;
 
