@@ -16,6 +16,7 @@ using std::string;
 using std::vector;
 
 const size_t sizeOfIsland = 11; // без воды
+const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
@@ -29,6 +30,7 @@ enum SquareType { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGL
                   /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
                   /// В рисовалке может быть увеличим количество типов.
 enum EffectOfSquare { STOP, GOON, ASK, DEAD };
+enum ActionTypes { LEAVEGOLD, MOVE };
 /*
 EffectOfSquare effectOfCellType(SquareType type) {
   switch (type){
@@ -118,22 +120,14 @@ public :
 
 };
 
-
-class Action {
-
-};
-
-class Player {
-
-};
-
 class SquareBase {
 private :
   static SquareType type_;
   bool explored_; /// чтобы сервер мог следить за циклами
 public :
-  SquareBase() {
-  }
+  SquareBase()
+    : explored_(false) {
+      }
 
   virtual EffectOfSquare effect(Pirate &pirate) {
     std::cout << "error: effect of unexplored";
@@ -173,6 +167,41 @@ public :
 
 };
 
+class Ship {
+public:
+  Ship(Point coord) {
+
+  }
+};
+
+class Action {
+
+};
+
+class Player {
+public:
+  string id;
+  std::vector<Pirate> pirates;
+  Ship* ship;
+  /// Данные для связи
+
+  Player(string id, Point ship_coord)
+    : id(id)
+    , pirates(0)
+    , ship(ship_coord) {
+      for (size_t i=0; i < numberOfPirates; ++i){
+        pirates.push_back(Pirate(ship_coord));
+      }
+      std::cout << "Player constructor" << std::endl;
+    }
+
+  Action getAction() {
+    int i;
+    std::cin >> i;
+    return
+  }
+
+};
 
 class Ship: public SquareBase {
 private:
@@ -184,6 +213,7 @@ public:
 
 };
 
+typedef std::pair<Pirate*, Point> Move;
 
 /// TODO: Factory!
 
