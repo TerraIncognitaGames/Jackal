@@ -17,7 +17,7 @@ using std::vector;
 
 /// If you change enum, don't forget to update functions.
 enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HOARSE, ICE,
+enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
                   CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP }; /// Эдик! Стрелочек тоже 7 видов, плохо их -- одним элементом:(
 /// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
                   /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
@@ -30,7 +30,8 @@ enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HO
 
 bool isMovingCellType(SquareType type) {
   switch (type){
-    case ARROW:
+    case SINGLEARROW:
+    case ARROWS:
     case GUN:
     case HOARSE:
     case BALOON:
@@ -168,30 +169,34 @@ public:
 };
 
 
-typedef vector<vector<Square> > Map;
-typedef std::function<Map(int)> MapCreaterFunction;
+class Map: public vector<vector<SquareBase*> > {
 
-/// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
-/// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
-std::vector<SquareType> MapFieldCreaterVector;
-insert (MapCreaterVector.end(), 64, FIELD);
-/// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
-/// в конструкторе клетки
-insert (MapCreaterVector.end(), 5, JUNGLE);
-insert (MapCreaterVector.end(), 4, DESERT);
-insert (MapCreaterVector.end(), 2, BOG);
-insert (MapCreaterVector.end(), 1, MOUNTAIN);
-insert (MapCreaterVector.end(), 2, BALOON);
-insert (MapCreaterVector.end(), 4, CROCODILE);
-insert (MapCreaterVector.end(), 6, ICE);
-insert (MapCreaterVector.end(), 2, HOARSE);
-insert (MapCreaterVector.end(), 2, FORTRESS);
-insert (MapCreaterVector.end(), 1, ABORIGINE);
-insert (MapCreaterVector.end(), 1, CANNIBAL);
-insert (MapCreaterVector.end(), 2, GUN);
-/// ориентация /// будет выбрана в конструкторе клетки
-insert (MapCreaterVector.end(), 21, ARROW);
-/// ориентация и вариации (7х3) /// аналогично
+  Map()
+    : vector<vector<SquareBase*> >(0){
+      /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
+      /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
+      std::vector<SquareType> SquareTypesForMapCreation;
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
+      /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта) /// в конструктор клетки
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, MOUNTAIN);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BALOON);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, CROCODILE);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, ICE);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, HOARSE);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, FORTRESS);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, ABORIGINE);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, CANNIBAL);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, GUN);
+      /// ориентация будет выбрана в конструкторе клетки
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, SINGLEARROW);
+      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
+      /// ориентация и вариации (7х3) -//-
+      /// эти настройки нужно будет вынести из этой функции в другое место
+  }
+};
 
 
 class Field {
@@ -199,12 +204,13 @@ public:
   Field(int size = 6) {
     // creates empty field.
     for (int i = 0; i < size; ++i) {
-      map_.push_back(vector<BaseSquare*>(size, new BaseSquare));
+      map_.push_back(vector<SquareBase*>(size, new BaseSquare));
     }
   }
 
-  Field(MapCreaterFunction mcf, int size = 6) {
-    map_ = mcf(size);
+  Field(int size = 6):
+    map(size) {
+
   }
 
   Square& operator[](Point p) {
@@ -228,6 +234,7 @@ public:
 
 private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
+  std::vector<Player> players;
 };
 
 
