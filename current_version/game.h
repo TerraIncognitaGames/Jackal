@@ -22,6 +22,11 @@ enum SquareType { HIDDEN, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, ARROW, HO
 /// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
                   /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
                   /// очень не хочется заморачиваться с угловыми
+                  /// Ed: угловые будут проверятся той же функцией, которая проверяет выход за пределы поля.
+                  /// Ed: Яму не тяжело будет добавить. Смолет думаю тоже.
+                  /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
+                  /// В рисовалке может быть увеличим количество типов.
+
 
 bool isMovingCellType(SquareType type) {
   switch (type){
@@ -30,7 +35,7 @@ bool isMovingCellType(SquareType type) {
     case HOARSE:
     case BALOON:
     case ICE:
-    case CROCODILE:/// возвращает тебя на клетку, с которой ты ходил
+    case CROCODILE:
       return true;
     default:
       return false;
@@ -171,6 +176,7 @@ typedef std::function<Map(int)> MapCreaterFunction;
 std::vector<SquareType> MapFieldCreaterVector;
 insert (MapCreaterVector.end(), 64, FIELD);
 /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
+/// в конструкторе клетки
 insert (MapCreaterVector.end(), 5, JUNGLE);
 insert (MapCreaterVector.end(), 4, DESERT);
 insert (MapCreaterVector.end(), 2, BOG);
@@ -183,9 +189,9 @@ insert (MapCreaterVector.end(), 2, FORTRESS);
 insert (MapCreaterVector.end(), 1, ABORIGINE);
 insert (MapCreaterVector.end(), 1, CANNIBAL);
 insert (MapCreaterVector.end(), 2, GUN);
-/// ориентация
+/// ориентация /// будет выбрана в конструкторе клетки
 insert (MapCreaterVector.end(), 21, ARROW);
-/// ориентация и вариации (7х3)
+/// ориентация и вариации (7х3) /// аналогично
 
 
 class Field {
@@ -193,7 +199,7 @@ public:
   Field(int size = 6) {
     // creates empty field.
     for (int i = 0; i < size; ++i) {
-      map_.push_back(vector<Square>(size, Square()));
+      map_.push_back(vector<BaseSquare*>(size, new BaseSquare));
     }
   }
 
@@ -223,31 +229,6 @@ public:
 private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
 };
-
-
-
-
-/// water
-/// field
-/// jungle
-/// desert
-/// bog
-/// mountain
-
-/// arrow
-/// hoarse
-/// ice
-/// crocodile
-
-/// baloon
-/// gun
-
-// after_all : hole
-// after_all : rum
-/// cannibal
-
-/// fortress
-/// aborigine
 
 
 class RequestQuery {};
