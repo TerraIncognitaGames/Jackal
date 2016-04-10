@@ -19,8 +19,8 @@ const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
-enum Direction { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
+enum Direction: char { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
+enum SquareType: char { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
                   CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP }; /// Эдик! Стрелочек тоже 7 видов, плохо их -- одним элементом:(
 /// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
                   /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
@@ -29,8 +29,9 @@ enum SquareType { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGL
                   /// Ed: Яму не тяжело будет добавить. Смолет думаю тоже.
                   /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
                   /// В рисовалке может быть увеличим количество типов.
-enum EffectOfSquare { STOP, GOON, ASK, DEAD };
-enum ActionTypes { LEAVEGOLD, MOVE };
+enum EffectOfSquare: char { STOP, GOON, ASK, DEAD };
+enum EventType: char { DROPGOLD, MOVE, DEATH };
+
 /*
 EffectOfSquare effectOfCellType(SquareType type) {
   switch (type){
@@ -61,22 +62,22 @@ public:
 
   Point GetPointToThe(Direction dir) {
     switch (dir) {
-    case TOP:
-      return Point(x, y + 1);
-    case BOTTOM:
-      return Point(x, y - 1);
-    case RIGHT:
-      return Point(x + 1, y);
-    case LEFT:
-      return Point(x - 1, y);
-    case TOPRIGHT:
-      return Point(x + 1, y + 1);
-    case TOPLEFT:
-      return Point(x - 1, y + 1);
-    case BOTTOMLEFT:
-      return Point(x - 1, y - 1);
-    case BOTTOMRIGHT:
-      return Point(x + 1, y - 1);
+      case TOP:
+        return Point(x, y + 1);
+      case BOTTOM:
+        return Point(x, y - 1);
+      case RIGHT:
+        return Point(x + 1, y);
+      case LEFT:
+        return Point(x - 1, y);
+      case TOPRIGHT:
+        return Point(x + 1, y + 1);
+      case TOPLEFT:
+        return Point(x - 1, y + 1);
+      case BOTTOMLEFT:
+        return Point(x - 1, y - 1);
+      case BOTTOMRIGHT:
+        return Point(x + 1, y - 1);
     }
   }
 
@@ -182,8 +183,14 @@ private:
 
 };
 
-class Action {
+class Event {
+public:
+  EventType type;
+  Pirate* pirate;
+  Point destination; // (0,0), чтобы положить монетку
+  Event() {
 
+  }
 };
 
 class Player {
@@ -203,17 +210,26 @@ public:
       std::cout << "Player constructor" << std::endl;
     }
 
-  Action getAction() {
+  void send(string str) {
+    std::cout << id << " get string:   " << str << std::endl;
+  }
+
+  void send(Event event) {
+    std::cout << id << " get event:   " << event.type << std::endl;
+  }
+
+
+  Event get_event_request() {
     int i;
     std::cin >> i;
 
   }
 
+  void ban() {
+    send("you are baned");
+  }
 };
 
-
-
-typedef std::pair<Pirate*, Point> Move;
 
 /// TODO: Factory!
 
@@ -245,7 +261,7 @@ public:
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
       /// ориентация и вариации (7х3) -//-
       /// эти настройки нужно будет вынести из этой функции в другое место
-      for (int i = 0; i < size; ++i) {
+      for (size_t i = 0; i < size; ++i) {
         push_back(std::vector<SquareBase*>(size, new SquareBase));
       }
       std::cout << "Map constructor" << std::endl;
@@ -256,16 +272,38 @@ public:
 
 class GameHolder {
 public:
-  GameHolder(size_t size = sizeOfIsland):
-    map_(size) {
-    std::cout << "Field constructor" << std::endl;
-  }
+  GameHolder(size_t size = sizeOfIsland)
+    : map_(size)
+    , players_() {
+        players_.push_back(Player("A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
+        players_.push_back(Player("B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
+        players_.push_back(Player("C", Point((sizeOfIsland + 1)/2, 0)));
+        players_.push_back(Player("D", Point(0, (sizeOfIsland + 1)/2)));
+        std::cout << "Game constructor" << std::endl;
+      }
 
   SquareBase* operator[](Point p) {
     return map_[p.x][p.y];
   }
-  /*
-  Square& operator[](const Player &p) {
+
+
+
+  bool check_posibility(Event& event) {
+
+  }
+
+  bool accept(Event& event) {
+    if (~check_posibility(event)) {
+      return false;
+    }
+    /// здесь прописываются все изменения на карте и с пиратом,
+    /// на которого указывает событие (перемещение или бросок монетки или смерть) но не вся цепочка событий
+    /// в клиенте происходит просто accept всех событий отправленных сервером
+  }
+
+
+
+  /*SquareBase* operator[](const Player &p) {
     return map_[p.coord.x][p.coord.y];
   }
   void Bash(Point coord, Direction direction) {
@@ -280,9 +318,18 @@ public:
     return map_.size();
   }
 
+  void make_turn(Player& player); // объявить удаленным в клиенте
+
 private:
   Map map_;  // field_[0][0] is a Left Bottom corner.
-  std::vector<Player> players;
+  std::vector<Player> players_;
+
+  void send_to_all(Event event) {
+    for (Player player: players_) {
+      player.send(event);
+    }
+  }
+
 };
 
 
