@@ -88,6 +88,24 @@ public:
 
 };
 
+class Pirate;
+
+struct Request {
+  EventType type;
+  size_t player_id;
+  size_t pirate_num;
+  Point destination;
+  size_t position_on_square;
+  Request(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square)
+    :type(type)
+    , player_id(player_id)
+    , pirate_num(pirate_num)
+    , destination(destination)
+    , position_on_square(position_on_square)
+     {}
+
+  Request() {}
+};
 
 class Pirate {
 private :
@@ -104,15 +122,16 @@ public :
     , dead_(false) {
       std::cout << "Pirate created" << std::endl;
     }
-  bool gold() {
+  bool gold() const {
     return gold_;
   }
-  Point coordinate() {
+  Point coordinate() const {
     return coordinate_;
   }
   size_t position_on_square() {
     return position_on_square_;
   }
+
   void kill() {
     dead_ = true;
     gold_ = false;
@@ -183,27 +202,14 @@ private:
 
 };
 
-struct Request {
-  EventType type;
-  Pirate* pirate;
-  Point destination;
-  size_t position_on_square;
-  Request(EventType type, Pirate* pirate, Point destination, size_t position_on_square)
-    :type(type)
-    , pirate(pirate)
-    , destination(destination)
-    , position_on_square(position_on_square)
-     {}
 
-  Request() {}
-};
 
 class Event: public Request {
 public:
   SquareType square_type;
 
-  Event(EventType type, Pirate* pirate, Point destination, size_t position_on_square, SquareType square_type)
-    : Request(type, pirate, destination, position_on_square)
+  Event(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square, SquareType square_type)
+    : Request(type, player_id, pirate_num, destination, position_on_square)
     , square_type(square_type)
      {}
 
@@ -215,13 +221,15 @@ public:
 
 class Player {
 public:
-  string id;
+  size_t id;
+  string login;
   std::vector<Pirate> pirates;
   Ship* ship;
   /// Данные для связи
 
-  Player(string id, Point ship_coord)
+  Player(size_t id, string login, Point ship_coord)
     : id(id)
+    , login(login)
     , pirates()
     , ship(new Ship(ship_coord)) {
       for (size_t i=0; i < numberOfPirates; ++i){
@@ -231,17 +239,17 @@ public:
     }
 
   void send(string str) {
-    std::cout << id << " get string:   " << str << std::endl;
+    std::cout << login << " get string:   " << str << std::endl;
   }
 
   void send(Event event) {
-    std::cout << id << " get event:   " << event.type << std::endl;
+    std::cout << login << " get event:   " << event.type << std::endl;
   }
 
 
   Request get_event_request() {
-    std::cout << id << " enter request: " << std::endl;
-    return Request(EventType::MOVE, &pirates[0], Point(0, 0), 0);
+    std::cout << login << " enter request: " << std::endl;
+    return Request(EventType::MOVE, id, 0, Point(0, 0), 0);
   }
 
   void ban() {
@@ -294,25 +302,37 @@ public:
   GameHolder(size_t size = sizeOfIsland)
     : map_(size)
     , players_() {
-        players_.push_back(Player("A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
-        players_.push_back(Player("B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
-        players_.push_back(Player("C", Point((sizeOfIsland + 1)/2, 0)));
-        players_.push_back(Player("D", Point(0, (sizeOfIsland + 1)/2)));
+        players_.push_back(Player(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
+        players_.push_back(Player(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
+        players_.push_back(Player(2, "C", Point((sizeOfIsland + 1)/2, 0)));
+        players_.push_back(Player(3, "D", Point(0, (sizeOfIsland + 1)/2)));
         std::cout << "Game constructor" << std::endl;
       }
 
-  const SquareBase* get_square(Point p) {
-    return map_[p.x][p.y];
+  SquareType get_square_type(Point p) const {
+    return map_[p.x][p.y]->type();
   }
 
 
 
-  bool possible_event(Request& event) const {
+  vector<Pirate*> getPiratesAtPoint(Point coor) const {
+    vector<Pirate*> result;
+    for (Player player: players_) {
+      for (Pirate pirate: player.pirates) {
+        if (pirate.coordinate() == coor) {
+          result.push_back(&pirate);
+        }
+      }
+    }
+    return result;
+  }
+
+  bool possible_req(Request& req) const {
     return true;
   }
 
-  bool accept(Request& event) {
-    if (not possible_event(event)) {
+  bool accept(Request& req) {
+    if (not possible_req(req)) {
       return false;
     }
     /// Do something
@@ -322,7 +342,7 @@ public:
     /// в клиенте происходит просто accept всех событий отправленных сервером
   }
 
-  Request generate_request(Pirate* pirate) {
+  Request generate_request(size_t player_id, size_t pirate_num) {
     // Будет определять, что происходит с пиратом когда он оказался на клетке которая не дает выбора
   }
 
@@ -341,23 +361,34 @@ public:
     return map_.size();
   }
 
-  void make_turn(Player& player); // объявить удаленным в клиенте
+  vector<Request> attack(const Player& player, Point coor) const {
+    std::cout << player.login << " attacks" << coor.x <<", "<< coor.y << std::endl;
+    vector<Request> result(0);
+    for (Player other_player: players_) {
+      if (player.id == other_player.id) {
+      } else {
+        for (size_t i=0; i<numberOfPirates; ++i) {
+          if (player.pirates[i].coordinate() == coor) {
+            if (get_square_type(coor) == WATER || get_square_type(coor) == SHIP) {
+              result.push_back(Request(EventType::DEATH, other_player.id, i, coor, 0));
+            } else {
+              result.push_back(Request(EventType::MOVE, other_player.id, i, other_player.ship->coordinate(), 0));
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }
 
-private:
+  ~GameHolder() {
+    std::cout << "Game holder destructor" << std::endl;
+  }
+
+protected:
   GameMap map_;  // field_[0][0] is a Left Bottom corner.
 public:
   std::vector<Player> players_;
-
-  void send_to_all(Event event) {
-    for (Player player: players_) {
-      player.send(event);
-    }
-  }
-
-  void send_to_all(Request req) {
-    Event event(req.type, req.pirate, req.destination, req.position_on_square, get_square(req.destination)->type());
-    send_to_all(event);
-  }
 
 };
 
