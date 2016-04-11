@@ -130,11 +130,11 @@ public :
     : explored_(false) {
       }
 
-  virtual EffectOfSquare effect(Pirate &pirate) {
-    std::cout << "error: effect of unexplored";
+  virtual EffectOfSquare effectType(Pirate* pirate) const {
+    return STOP;
   }
 
-  SquareType type() {
+  virtual SquareType type() const {
     return type_;
   }
 
@@ -149,19 +149,19 @@ private :
   size_t num_of_steps_;
   SquareType type_;
 public :
-  size_t gold() {
+  size_t gold() const {
     return gold_;
   }
 
-  size_t num_of_steps() {
+  size_t num_of_steps() const {
     return num_of_steps_;
   }
 
-  virtual EffectOfSquare effect(Pirate &pirate) {
+  virtual EffectOfSquare effect() const {
     return STOP;
   }
 
-  SquareType type() {
+  SquareType type() const {
     return type_;
   }
 
@@ -175,7 +175,7 @@ public:
 
   }
 
-  Point coordinate() {
+  Point coordinate() const {
     return coordinate_;
   }
 private:
@@ -183,14 +183,34 @@ private:
 
 };
 
-class Event {
-public:
+struct Request {
   EventType type;
   Pirate* pirate;
-  Point destination; // (0,0), чтобы положить монетку
-  Event() {
+  Point destination;
+  size_t position_on_square;
+  Request(EventType type, Pirate* pirate, Point destination, size_t position_on_square)
+    :type(type)
+    , pirate(pirate)
+    , destination(destination)
+    , position_on_square(position_on_square)
+     {}
 
-  }
+  Request() {}
+};
+
+class Event: public Request {
+public:
+  SquareType square_type;
+
+  Event(EventType type, Pirate* pirate, Point destination, size_t position_on_square, SquareType square_type)
+    : Request(type, pirate, destination, position_on_square)
+    , square_type(square_type)
+     {}
+
+  Event(Request req, SquareType square_type)
+    : Request(req)
+    , square_type(square_type)
+      {}
 };
 
 class Player {
@@ -219,10 +239,9 @@ public:
   }
 
 
-  Event get_event_request() {
-    int i;
-    std::cin >> i;
-
+  Request get_event_request() {
+    std::cout << id << " enter request: " << std::endl;
+    return Request(EventType::MOVE, &pirates[0], Point(0, 0), 0);
   }
 
   void ban() {
@@ -233,9 +252,9 @@ public:
 
 /// TODO: Factory!
 
-class Map: public vector<vector<SquareBase*> > {
+class GameMap: public vector<vector<SquareBase*> > {
 public:
-  Map(size_t size = sizeOfIsland + 2)
+  GameMap(size_t size = sizeOfIsland + 2)
     : vector<vector<SquareBase*> >(0)
     {
       /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
@@ -282,26 +301,30 @@ public:
         std::cout << "Game constructor" << std::endl;
       }
 
-  SquareBase* operator[](Point p) {
+  const SquareBase* get_square(Point p) {
     return map_[p.x][p.y];
   }
 
 
 
-  bool check_posibility(Event& event) {
-
+  bool possible_event(Request& event) const {
+    return true;
   }
 
-  bool accept(Event& event) {
-    if (~check_posibility(event)) {
+  bool accept(Request& event) {
+    if (not possible_event(event)) {
       return false;
     }
-    /// здесь прописываются все изменения на карте и с пиратом,
+    /// Do something
+    return true;
+    /// здесь прописываются все изменения на карте: с пиратом, и с клеткой под ним
     /// на которого указывает событие (перемещение или бросок монетки или смерть) но не вся цепочка событий
     /// в клиенте происходит просто accept всех событий отправленных сервером
   }
 
-
+  Request generate_request(Pirate* pirate) {
+    // Будет определять, что происходит с пиратом когда он оказался на клетке которая не дает выбора
+  }
 
   /*SquareBase* operator[](const Player &p) {
     return map_[p.coord.x][p.coord.y];
@@ -314,20 +337,26 @@ public:
       (*this)[coord][GetOppositeDirection(direction)] = false;
     }
   }*/
-  int size() {  // name should be lowercase.
+  int size() const {  // name should be lowercase.
     return map_.size();
   }
 
   void make_turn(Player& player); // объявить удаленным в клиенте
 
 private:
-  Map map_;  // field_[0][0] is a Left Bottom corner.
+  GameMap map_;  // field_[0][0] is a Left Bottom corner.
+public:
   std::vector<Player> players_;
 
   void send_to_all(Event event) {
     for (Player player: players_) {
       player.send(event);
     }
+  }
+
+  void send_to_all(Request req) {
+    Event event(req.type, req.pirate, req.destination, req.position_on_square, get_square(req.destination)->type());
+    send_to_all(event);
   }
 
 };
