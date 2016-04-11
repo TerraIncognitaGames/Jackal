@@ -73,7 +73,7 @@ public:
             request = Request(EventType::DEATH, player.id, moving_pirate_num, request.destination, 0);
             accept_and_send(request);
           }
-        case DEAD:
+        case KILL:
           flag = true;
           request = generate_request(player.id, moving_pirate_num);
           accept_and_send(request);

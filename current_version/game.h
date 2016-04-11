@@ -29,7 +29,7 @@ enum SquareType: char { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN,
                   /// Ed: Яму не тяжело будет добавить. Смолет думаю тоже.
                   /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
                   /// В рисовалке может быть увеличим количество типов.
-enum EffectOfSquare: char { STOP, GOON, ASK, DEAD };
+enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
 
 /*
@@ -142,11 +142,12 @@ public :
 
 class SquareBase {
 private :
-  static SquareType type_;
+  SquareType type_;
   bool explored_; /// чтобы сервер мог следить за циклами
 public :
   SquareBase()
-    : explored_(false) {
+    : explored_(false)
+    , type_(UNEXPLORED){
       }
 
   virtual EffectOfSquare effectType(Pirate* pirate) const {
@@ -157,11 +158,14 @@ public :
     return type_;
   }
 
+  virtual ~SquareBase() {
+    // std::cout << "SqBase destructor" << std::endl;
+  }
 };
-SquareType SquareBase::type_ = UNEXPLORED;
-typedef SquareBase HiddenSquare;
 
+typedef SquareBase UnexploredSquare;
 
+/*
 class Square {
 private :
   size_t gold_;
@@ -183,9 +187,7 @@ public :
   SquareType type() const {
     return type_;
   }
-
-
-};
+};*/
 
 class Ship {
 public:
@@ -288,10 +290,23 @@ public:
       SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
       /// ориентация и вариации (7х3) -//-
       /// эти настройки нужно будет вынести из этой функции в другое место
+      vector<SquareBase*> new_column;
       for (size_t i = 0; i < size; ++i) {
-        push_back(std::vector<SquareBase*>(size, new SquareBase));
+        new_column.resize(0);
+        for (size_t i = 0; i < size; ++i){
+          new_column.push_back(new SquareBase);
+        }
+        push_back(new_column);
       }
       std::cout << "Map constructor" << std::endl;
+    }
+
+    ~GameMap() {
+      for (auto i:*this) {
+        for (SquareBase* j: i){
+          delete j;
+        }
+      }
     }
 
 };
@@ -312,8 +327,6 @@ public:
   SquareType get_square_type(Point p) const {
     return map_[p.x][p.y]->type();
   }
-
-
 
   vector<Pirate*> getPiratesAtPoint(Point coor) const {
     vector<Pirate*> result;
@@ -362,7 +375,7 @@ public:
   }
 
   vector<Request> attack(const Player& player, Point coor) const {
-    std::cout << player.login << " attacks" << coor.x <<", "<< coor.y << std::endl;
+    std::cout << player.login << " attacks " << coor.x <<", "<< coor.y << std::endl;
     vector<Request> result(0);
     for (Player other_player: players_) {
       if (player.id == other_player.id) {
