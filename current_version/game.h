@@ -161,6 +161,12 @@ public :
   virtual ~SquareBase() {
     // std::cout << "SqBase destructor" << std::endl;
   }
+
+  virtual string info() const{
+    string result;
+    result.push_back(char(type()));
+    return result;
+  }
 };
 
 typedef SquareBase UnexploredSquare;
@@ -208,16 +214,16 @@ private:
 
 class Event: public Request {
 public:
-  SquareType square_type;
+  string square_info;
 
-  Event(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square, SquareType square_type)
+  Event(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square, string square_info)
     : Request(type, player_id, pirate_num, destination, position_on_square)
-    , square_type(square_type)
+    , square_info(square_info)
      {}
 
-  Event(Request req, SquareType square_type)
+  Event(Request req, string square_info)
     : Request(req)
-    , square_type(square_type)
+    , square_info(square_info)
       {}
 };
 
@@ -328,6 +334,10 @@ public:
     return map_[p.x][p.y]->type();
   }
 
+  string get_square_info(Point p) const {
+    return map_[p.x][p.y]->info();
+  }
+
   vector<Pirate*> getPiratesAtPoint(Point coor) const {
     vector<Pirate*> result;
     for (Player player: players_) {
@@ -343,7 +353,6 @@ public:
   bool possible_req(Request& req) const {
     return true;
   }
-
   bool accept(Request& req) {
     if (not possible_req(req)) {
       return false;
@@ -402,7 +411,6 @@ protected:
   GameMap map_;  // field_[0][0] is a Left Bottom corner.
 public:
   std::vector<Player> players_;
-
 };
 
 

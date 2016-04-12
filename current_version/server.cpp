@@ -44,7 +44,8 @@ public:
     /// ј здесь надо что-то делать с бесконечными циклами.
     flag = false;
     while (not flag) {
-      switch(map_[request.destination.x][request.destination.y]->effectType(&players_[request.player_id].pirates[request.pirate_num])){
+      switch(map_[request.destination.x][request.destination.y]->
+             effectType(&players_[request.player_id].pirates[request.pirate_num])){
         case STOP:
           flag = true;
           for (Request req:attack(player, request.destination)){
@@ -91,7 +92,8 @@ private:
   }
 
    void send_to_all(Request req) {
-    Event event(req.type, req.player_id, req.pirate_num, req.destination, req.position_on_square, get_square_type(req.destination));
+    Event event(req.type, req.player_id, req.pirate_num, req.destination,
+                 req.position_on_square, get_square_info(req.destination));
     send_to_all(event);
   }
 
