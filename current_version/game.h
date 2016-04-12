@@ -233,7 +233,6 @@ public:
   string login;
   std::vector<Pirate> pirates;
   Ship* ship;
-  /// Данные для связи
 
   Player(size_t id, string login, Point ship_coord)
     : id(id)
@@ -246,22 +245,7 @@ public:
       std::cout << "Player constructor" << std::endl;
     }
 
-  void send(string str) {
-    std::cout << login << " get string:   " << str << std::endl;
-  }
-
-  void send(Event event) {
-    std::cout << login << " get event:   " << event.type << std::endl;
-  }
-
-
-  Request get_event_request() {
-    std::cout << login << " enter request: " << std::endl;
-    return Request(EventType::MOVE, id, 0, Point(0, 0), 0);
-  }
-
-  void ban() {
-    send("you are baned");
+  virtual ~Player() {
   }
 };
 
@@ -323,10 +307,10 @@ public:
   GameHolder(size_t size = sizeOfIsland)
     : map_(size)
     , players_() {
-        players_.push_back(Player(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
-        players_.push_back(Player(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
-        players_.push_back(Player(2, "C", Point((sizeOfIsland + 1)/2, 0)));
-        players_.push_back(Player(3, "D", Point(0, (sizeOfIsland + 1)/2)));
+        players_.push_back(new Player(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
+        players_.push_back(new Player(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
+        players_.push_back(new Player(2, "C", Point((sizeOfIsland + 1)/2, 0)));
+        players_.push_back(new Player(3, "D", Point(0, (sizeOfIsland + 1)/2)));
         std::cout << "Game constructor" << std::endl;
       }
 
@@ -340,8 +324,8 @@ public:
 
   vector<Pirate*> getPiratesAtPoint(Point coor) const {
     vector<Pirate*> result;
-    for (Player player: players_) {
-      for (Pirate pirate: player.pirates) {
+    for (Player* player: players_) {
+      for (Pirate pirate: player->pirates) {
         if (pirate.coordinate() == coor) {
           result.push_back(&pirate);
         }
@@ -383,18 +367,18 @@ public:
     return map_.size();
   }
 
-  vector<Request> attack(const Player& player, Point coor) const {
-    std::cout << player.login << " attacks " << coor.x <<", "<< coor.y << std::endl;
+  vector<Request> attack(const Player* player, Point coor) const {
+    std::cout << player->login << " attacks " << coor.x <<", "<< coor.y << std::endl;
     vector<Request> result(0);
-    for (Player other_player: players_) {
-      if (player.id == other_player.id) {
+    for (Player* other_player: players_) {
+      if (player->id == other_player->id) {
       } else {
         for (size_t i=0; i<numberOfPirates; ++i) {
-          if (player.pirates[i].coordinate() == coor) {
+          if (player->pirates[i].coordinate() == coor) {
             if (get_square_type(coor) == WATER || get_square_type(coor) == SHIP) {
-              result.push_back(Request(EventType::DEATH, other_player.id, i, coor, 0));
+              result.push_back(Request(EventType::DEATH, other_player->id, i, coor, 0));
             } else {
-              result.push_back(Request(EventType::MOVE, other_player.id, i, other_player.ship->coordinate(), 0));
+              result.push_back(Request(EventType::MOVE, other_player->id, i, other_player->ship->coordinate(), 0));
             }
           }
         }
@@ -404,13 +388,16 @@ public:
   }
 
   ~GameHolder() {
+    for (Player* player:players_) {
+      delete(player);
+    }
     std::cout << "Game holder destructor" << std::endl;
   }
 
 protected:
   GameMap map_;  // field_[0][0] is a Left Bottom corner.
 public:
-  std::vector<Player> players_;
+  std::vector<Player*> players_;
 };
 
 
