@@ -50,7 +50,7 @@ EffectOfSquare effectOfCellType(SquareType type) {
 
 
 class Point {
-public:
+public:w
   int x, y;
   Point(int x_coord = 0, int y_coord = 0)
     : x(x_coord), y(y_coord) {}
@@ -82,7 +82,7 @@ public:
   }
 
 
-  bool IsCorrectPoint(int size) { // rewrite
+  bool IsCorrectPoint(int size) {  /// long char, iterator vector, bool string... XD
     return (x >= 0 && x < size && y >= 0 && y < size);
   }
 
@@ -122,6 +122,7 @@ public :
     , dead_(false) {
       std::cout << "Pirate created" << std::endl;
     }
+
   bool gold() const {
     return gold_;
   }
