@@ -50,7 +50,7 @@ EffectOfSquare effectOfCellType(SquareType type) {
 
 
 class Point {
-public:w
+public:
   int x, y;
   Point(int x_coord = 0, int y_coord = 0)
     : x(x_coord), y(y_coord) {}
