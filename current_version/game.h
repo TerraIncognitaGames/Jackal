@@ -15,7 +15,7 @@ using std::map;
 using std::string;
 using std::vector;
 
-const size_t sizeOfIsland = 11; // без воды
+const size_t sizeOfIsland = 3; // без воды
 const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
@@ -82,8 +82,8 @@ public:
   }
 
 
-  bool IsCorrectPoint(int size) {  /// long char, iterator vector, bool string... XD
-    return (x >= 0 && x < size && y >= 0 && y < size);
+  bool IsCorrectPoint(int size) { /// Иначе лезут warningи
+    return (x >= 0 && x < size && y >= 0 && y < size && ~((x == size||x == 0) and (y == size || y == 0)));
   }
 
 };
@@ -142,13 +142,18 @@ public :
 };
 
 class SquareBase {
-private :
+private:
   SquareType type_;
   bool explored_; /// чтобы сервер мог следить за циклами
 public :
   SquareBase()
-    : explored_(false)
-    , type_(UNEXPLORED){
+    : type_(UNEXPLORED)
+    , explored_(false){
+      }
+
+  SquareBase(SquareType type, bool explored)
+    : type_(type)
+    , explored_(explored){
       }
 
   virtual EffectOfSquare effectType(Pirate* pirate) const {
@@ -170,7 +175,24 @@ public :
   }
 };
 
-typedef SquareBase UnexploredSquare;
+typedef SquareBase SquareUnexplored;
+
+class SquareStop: public SquareBase { // на таких клетках может кончатся ход
+public:
+  SquareStop(SquareType type, bool explored)
+    : SquareBase(type, explored){}
+
+  SquareStop()
+    : SquareBase(WATER, true) {}
+
+  virtual EffectOfSquare effectType(Pirate* pirate) const {
+    return STOP;
+  }
+
+  virtual ~SquareStop() { };
+};
+
+typedef SquareStop SquareWater;
 
 /*
 class Square {
@@ -209,6 +231,10 @@ public:
 private:
   Point coordinate_;// or store it in player?
 
+};
+
+class FactoryForSquares {
+  /// сделать фабрику!!!
 };
 
 
@@ -251,46 +277,17 @@ public:
 };
 
 
-/// TODO: Factory!
 
 class GameMap: public vector<vector<SquareBase*> > {
 public:
-  GameMap(size_t size = sizeOfIsland + 2)
+  GameMap(size_t size = (sizeOfIsland + 2))
     : vector<vector<SquareBase*> >(0)
     {
-      /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
-      /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
-      std::vector<SquareType> SquareTypesForMapCreation;
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
-      /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
-      /// в конструктор клетки
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, MOUNTAIN);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BALOON);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, CROCODILE);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, ICE);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, HOARSE);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, FORTRESS);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, ABORIGINE);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, CANNIBAL);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, GUN);
-      /// ориентация будет выбрана в конструкторе клетки
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, SINGLEARROW);
-      SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
-      /// ориентация и вариации (7х3) -//-
-      /// эти настройки нужно будет вынести из этой функции в другое место
-      vector<SquareBase*> new_column;
-      for (size_t i = 0; i < size; ++i) {
-        new_column.resize(0);
-        for (size_t i = 0; i < size; ++i){
-          new_column.push_back(new SquareBase);
-        }
-        push_back(new_column);
-      }
+      init(size);
       std::cout << "Map constructor" << std::endl;
     }
+
+    void init(size_t size); /// Эта функция реализуется по разному для сервера и клиента
 
     ~GameMap() {
       for (auto i:*this) {
@@ -305,13 +302,9 @@ public:
 
 class GameHolder {
 public:
-  GameHolder(size_t size = sizeOfIsland)
+  GameHolder(vector<Player*> players, size_t size = sizeOfIsland + 2)
     : map_(size)
-    , players_() {
-        players_.push_back(new Player(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
-        players_.push_back(new Player(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
-        players_.push_back(new Player(2, "C", Point((sizeOfIsland + 1)/2, 0)));
-        players_.push_back(new Player(3, "D", Point(0, (sizeOfIsland + 1)/2)));
+    , players_(players) {
         std::cout << "Game constructor" << std::endl;
       }
 
