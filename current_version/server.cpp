@@ -1,4 +1,6 @@
 #include<iostream>
+#include <thread>
+#include "socket.h"
 #include "game.h"
 
 class ServerPlayer: public Player { // TODO: rename
@@ -175,15 +177,65 @@ private:
 
 };
 
+
+/// ----------------------------- к сокетам :
+
+class TAcceptHandler {
+  private:
+      TSocket Socket;
+
+  public:
+    bool HandleAcceptedSocket(TSocket sock) {
+        Socket = sock;
+        return true;
+    }
+    const TSocket &GetSocket() const {
+        return Socket;
+    }
+};
+
+
+TSocket CreateConnection(int port) {
+  TSocket s;
+  s.Bind(port, "");
+  TAcceptHandler handler;
+  s.AcceptLoop(handler);
+  return handler.GetSocket();
+}
+
+class TDataHandler {
+  public:
+    bool ProcessReceivedData(const char *data, size_t sz) const {
+      for (; sz > 0; --sz, ++data)
+          std::cout << *data;
+      std::cout << '\n';
+      std::cout << std::flush;
+      return false;
+    }
+};
+
+
+
+
+
 int main() {
   vector<Player*> players;
-  players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
-  players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
-  players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
-  players.push_back(new ServerPlayer(3, "D", Point(0, (sizeOfIsland + 1)/2)));
-  ServerGameHolder game(players);
+  //players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
+  //players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
+  //players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
+  //players.push_back(new ServerPlayer(3, "D", Point(0, (sizeOfIsland + 1)/2)));
+  //ServerGameHolder game(players);
   // std::cout << game.get_square(Point(1, 1))->type();
-  game.make_turn(game.players_[0]);
-  game.make_turn(game.players_[1]);
+  //game.make_turn(game.players_[0]);
+  //game.make_turn(game.players_[1]);
+
+
+  TSocket s = CreateConnection(6654433);
+  TDataHandler handler;
+  std::thread t([&s, &handler] () {
+    s.RecvLoop(handler);
+  });
+  t.join();
+
   return 0;
 }

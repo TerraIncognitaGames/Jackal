@@ -121,6 +121,8 @@ public :
     , position_on_square_(0)
     , dead_(false) {
       std::cout << "Pirate created" << std::endl;
+      /// не могу понять, почему каждый пират при создании дублируется \(О.о)/
+      /// см. строку в server.cpp players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
     }
 
   bool gold() const {
