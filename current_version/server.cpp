@@ -113,7 +113,7 @@ public:
       }
     }
     size_t moving_pirate_num = request.pirate_num;
-    /// ј здесь надо что-то делать с бесконечными циклами.
+    /// ј здесь надо что-то делать с бесконечными циклами
     flag = false;
     while (not flag) {
       switch(map_[request.destination.x][request.destination.y]->
@@ -183,7 +183,6 @@ private:
 class TAcceptHandler {
   private:
       TSocket Socket;
-
   public:
     bool HandleAcceptedSocket(TSocket sock) {
         Socket = sock;
@@ -193,7 +192,6 @@ class TAcceptHandler {
         return Socket;
     }
 };
-
 
 TSocket CreateConnection(int port) {
   TSocket s;
@@ -219,18 +217,18 @@ class TDataHandler {
 
 
 int main() {
-  vector<Player*> players;
-  //players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
-  //players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
-  //players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
-  //players.push_back(new ServerPlayer(3, "D", Point(0, (sizeOfIsland + 1)/2)));
-  //ServerGameHolder game(players);
-  // std::cout << game.get_square(Point(1, 1))->type();
-  //game.make_turn(game.players_[0]);
-  //game.make_turn(game.players_[1]);
+  /*vector<Player*> players;
+  players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
+  players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
+  players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
+  players.push_back(new ServerPlayer(3, "D", Point(0, (sizeOfIsland + 1)/2)));
+  ServerGameHolder game(players);
+  //std::cout << game.get_square(Point(1, 1))->type();
+  game.make_turn(game.players_[0]);
+  game.make_turn(game.players_[1]);*/
 
 
-  TSocket s = CreateConnection(6654433);
+  TSocket s = CreateConnection(6655442);
   TDataHandler handler;
   std::thread t([&s, &handler] () {
     s.RecvLoop(handler);
