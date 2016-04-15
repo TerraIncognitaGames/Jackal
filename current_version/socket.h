@@ -1,8 +1,18 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
+#ifdef _WIN32
+  #include <winsock2.h>
+#else
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <netinet/in.h>
+  #include <netdb.h>
+#endif
+
+#ifdef _MSC_VER
+  #include <io.h>
+#else
+  #include <unistd.h>
+#endif
+
 #include <memory>
 #include <string>
 #include <exception>
