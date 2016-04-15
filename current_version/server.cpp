@@ -213,9 +213,6 @@ class TDataHandler {
 };
 
 
-
-
-
 int main() {
   /*vector<Player*> players;
   players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
@@ -226,9 +223,10 @@ int main() {
   //std::cout << game.get_square(Point(1, 1))->type();
   game.make_turn(game.players_[0]);
   game.make_turn(game.players_[1]);*/
+  WSAStartup();
 
 
-  TSocket s = CreateConnection(6655442);
+  TSocket s = CreateConnection(1);
   TDataHandler handler;
   std::thread t([&s, &handler] () {
     s.RecvLoop(handler);
