@@ -21,7 +21,7 @@ public:
   }
 
   void ban() {
-    send("you are baned");
+    send("you are banned");
   }
 
   virtual ~ServerPlayer() {
@@ -39,7 +39,8 @@ void GameMap::init(size_t size) {
   /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
   std::vector<SquareType> SquareTypesForMapCreation;
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
-  /// на некоторых клетках должно сразу валяться золото (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
+  /// на некоторых клетках должно сразу валяться золото 
+  // (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
   /// в конструктор клетки
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
@@ -74,7 +75,7 @@ public:
     : GameHolder(players_) {
   }
 
-  void make_turn(Player* player_) { /// нужно куда-то добавить проверку что хоть какой-то ход возможен
+  void make_turn(Player* player_) { 
     ServerPlayer* player = static_cast<ServerPlayer*>(player_);
     bool flag = false;
     Request request;
@@ -114,7 +115,8 @@ public:
     flag = false;
     while (!flag) {
       switch(map_[request.destination.x][request.destination.y]->
-             effectType(&players_[request.player_id]->pirates[request.pirate_num])){
+             effectType(&players_[request.player_id]->
+                        pirates[request.pirate_num])) {
         case STOP:
           flag = true;
           for (Request req:attack(player, request.destination)){
@@ -140,7 +142,8 @@ public:
           } else {
             flag = true;
             send_to_all(request);
-            request = Request(EventType::DEATH, player->id, moving_pirate_num, request.destination, 0);
+            request = Request(EventType::DEATH, player->id, moving_pirate_num,
+                              request.destination, 0);
             accept_and_send(request);
           }
         case KILL:

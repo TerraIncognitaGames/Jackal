@@ -78,7 +78,8 @@ class TSocket {
             address.sin_family = AF_INET;
             address.sin_port = htons(port);
             address.sin_addr.s_addr = addr;
-            if (connect(Ptr->GetSocket(), reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0)
+            if (connect(Ptr->GetSocket(), 
+                reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0)
                 throw std::runtime_error("can't connect");
         }
         void Bind(int port, const std::string &host) {
@@ -93,7 +94,8 @@ class TSocket {
             } else {
                 address.sin_addr.s_addr = INADDR_ANY;
             }
-            if (bind(Ptr->GetSocket(), reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0)
+            if (bind(Ptr->GetSocket(), 
+                reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0)
                 throw std::runtime_error("can't bind");
             if (listen(Ptr->GetSocket(), 1) < 0)
                 throw std::runtime_error("can't start listening");
@@ -121,7 +123,8 @@ class TSocket {
             }
             return true;
         }
-        // returns true if connection was closed by handler, false if connection was closed by peer
+        // returns true if connection was closed by handler, 
+        // false if connection was closed by peer
         template<typename TIOHandler>
         bool RecvLoop(TIOHandler &handler) const {
             for (; ; ) {
