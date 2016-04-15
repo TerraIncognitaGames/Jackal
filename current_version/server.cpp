@@ -30,10 +30,7 @@ public:
 
   ServerPlayer(size_t id, string login, Point ship_coord)
     : Player(id, login, ship_coord){
-      for (size_t i=0; i < numberOfPirates; ++i){
-        pirates.push_back(Pirate(ship_coord));
-      }
-      std::cout << "Player constructor" << std::endl;
+      std::cout << "ServerPlayer constructor" << std::endl;
     }
 };
 
