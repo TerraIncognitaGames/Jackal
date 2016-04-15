@@ -80,7 +80,7 @@ public:
     Request request;
     size_t counter = 0;
     static size_t max_wrong_requests = 8;
-    while (not flag) {
+    while (!flag) {
       if (counter > max_wrong_requests) {
         player->ban(); /// переключаем на бота?
       }
@@ -112,7 +112,7 @@ public:
     size_t moving_pirate_num = request.pirate_num;
     /// А здесь надо что-то делать с бесконечными циклами
     flag = false;
-    while (not flag) {
+    while (!flag) {
       switch(map_[request.destination.x][request.destination.y]->
              effectType(&players_[request.player_id]->pirates[request.pirate_num])){
         case STOP:
@@ -123,7 +123,7 @@ public:
           break;
         case ASK:
           request = player->get_event_request();
-          while (request.pirate_num != moving_pirate_num or ~accept(request)) {
+          while (request.pirate_num != moving_pirate_num || !accept(request)) {
             ++counter;
             if (counter > max_wrong_requests) {
               player->ban();

@@ -15,7 +15,7 @@ using std::map;
 using std::string;
 using std::vector;
 
-const size_t sizeOfIsland = 3; // без воды
+const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
@@ -83,7 +83,7 @@ public:
 
 
   bool IsCorrectPoint(int size) { /// Иначе лезут warningи
-    return (x >= 0 && x < size && y >= 0 && y < size && ~((x == size||x == 0) and (y == size || y == 0)));
+    return (x >= 0 && x < size && y >= 0 && y < size && !((x == size||x == 0) && (y == size || y == 0)));
   }
 
 };
@@ -334,7 +334,7 @@ public:
     return true;
   }
   bool accept(Request& req) {
-    if (not possible_req(req)) {
+    if (possible_req(req)) {
       return false;
     }
     /// Do something
