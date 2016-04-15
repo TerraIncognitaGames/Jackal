@@ -304,7 +304,7 @@ public:
 
 class GameHolder {
 public:
-  GameHolder(vector<Player*>& players, size_t size = sizeOfIsland + 2)
+  GameHolder(vector<Player*> players, size_t size = sizeOfIsland + 2)
     : map_(size)
     , players_(players) {
         std::cout << "Game constructor" << std::endl;
