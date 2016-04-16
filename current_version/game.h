@@ -135,7 +135,6 @@ public:
     gold_ = false;
     position_on_square_ = 0;
   }
-  }
 };
 
 class SquareBase {
