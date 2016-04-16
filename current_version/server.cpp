@@ -45,7 +45,7 @@ void GameMap::init(size_t size) {
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, MOUNTAIN);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, MOUNTAINS);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BALOON);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, CROCODILE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, ICE);
@@ -54,19 +54,20 @@ void GameMap::init(size_t size) {
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, ABORIGINE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, CANNIBAL);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, GUN);
-  /// ориентация будет выбрана в конструкторе клетки
+  /// ориентация
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, SINGLEARROW);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
   /// ориентация и вариации (7х3) -//-
   /// эти настройки нужно будет вынести из этой функции в другое место
-  SquareField::goldDistribution.reserve(36);
-  SquareField::goldDistribution.resize(0);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 20, 0);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 5, 1);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 5, 2);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 3, 3);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 2, 4);
-  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 1, 5);
+  vector<unsigned int> goldDistribution;
+  goldDistribution.reserve(36);
+  goldDistribution.resize(0);
+  goldDistribution.insert(goldDistribution.end(), 20, 0);
+  goldDistribution.insert(goldDistribution.end(), 5, 1);
+  goldDistribution.insert(goldDistribution.end(), 5, 2);
+  goldDistribution.insert(goldDistribution.end(), 3, 3);
+  goldDistribution.insert(goldDistribution.end(), 2, 4);
+  goldDistribution.insert(goldDistribution.end(), 1, 5);
 
 
   vector<SquareBase*> new_column;
@@ -109,7 +110,7 @@ public:
             player->send("Wrong request");
           }
         case MOVE:
-          if (accept(request)) {
+          if (possible_req(request)) { ///!!!
             send_to_all(request);
             flag = true;
             break;
@@ -129,11 +130,13 @@ public:
                         pirates[request.pirate_num])) {
         case STOP:
           flag = true;
-          for (Request req:attack(player, request.destination)){
+          for (Request req:attack(player, request.destination, request.position_on_square)){
             accept_and_send(req);
           }
+          accept(request);
           break;
         case ASK:
+          accept(request);
           request = player->get_event_request();
           while (request.pirate_num != moving_pirate_num || !accept(request)) {
             ++counter;
@@ -146,6 +149,7 @@ public:
           send_to_all(request);
           break;
         case GOON:
+          accept(request);
           request = generate_request(player->id, moving_pirate_num);
           if (accept(request)) {
             send_to_all(request);
@@ -157,6 +161,7 @@ public:
             accept_and_send(request);
           }
         case KILL:
+          accept(request);
           flag = true;
           request = generate_request(player->id, moving_pirate_num);
           accept_and_send(request);
@@ -225,22 +230,20 @@ class TDataHandler {
 
 int main() {
   setUpSocketWindows();
-
-
-  TSocket s = CreateConnection(6655442);
-  TDataHandler handler;
-  std::thread t([&s, &handler] () {
-    s.RecvLoop(handler);
-  });
   vector<Player*> players;
   players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
   players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
   players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
   players.push_back(new ServerPlayer(3, "D", Point(0, (sizeOfIsland + 1)/2)));
   ServerGameHolder game(players);
-  //std::cout << game.get_square(Point(1, 1))->type();
   game.make_turn(game.players_[0]);
   game.make_turn(game.players_[1]);
-  t.join();
+  //std::cout << game.get_square(Point(1, 1))->type();
+  /*TSocket s = CreateConnection(6655442);
+  TDataHandler handler;
+  std::thread t([&s, &handler] () {
+    s.RecvLoop(handler);
+  });
+  t.join();*/
   return 0;
 }

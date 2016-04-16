@@ -22,7 +22,7 @@ const size_t numberOfPirates = 3;
 /// If you change enum, don't forget to update functions.
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
-enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN,
+enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
                        SINGLEARROW, ARROWS, HOARSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
@@ -172,31 +172,34 @@ public :
 
 typedef SquareBase SquareUnexplored;
 
-class SquareStop: public SquareBase { // на таких клетках может кончатся ход
+class SquareStopBase: public SquareBase { // на таких клетках может кончатся ход
 public:
-  SquareStop(SquareType type, bool explored)
+  SquareStopBase(SquareType type, bool explored)
     : SquareBase(type, explored) {}
 
-  SquareStop()
+  SquareStopBase()
     : SquareBase(WATER, true) {}
 
   virtual EffectOfSquare effectType(Pirate* pirate) const {
     return STOP;
   }
 
-  virtual ~SquareStop() { };
+  virtual ~SquareStopBase() { };
 };
 
-typedef SquareStop SquareWater;
+typedef SquareStopBase SquareWater;
 
-class SquareField: public SquareStop {
+class SquareField: public SquareStopBase { /// Это также база для клеток на которые может упасть золото.
 friend class GameMap;
 public:
-  SquareField()
-    : SquareStop(FIELD, false)
-    , gold_(){
+  SquareField(SquareType type)
+    : SquareStopBase(type, false)
+    , gold_(0) {}
 
-    }
+  SquareField(size_t gold)
+    : SquareStopBase(FIELD, false)
+    , gold_(gold){}
+
   size_t gold() {
     return gold_;
   }
@@ -217,15 +220,55 @@ public:
 
 protected:
   size_t gold_;
-  static vector<unsigned int> goldDistribution;
 };
 
-vector<unsigned int> SquareField::goldDistribution;
+class SquareSpinningBase: public SquareField { // Вертушки
+  /// Золото ложится на клетку в целом. Достается выбившему.
+  /// Если бросить золото, то достается первому, кто сделает ход на эту/этой клетке.
+  /// Хотим ли это улучшить?
+public:
+  SquareSpinningBase(SquareType type, size_t max_position)
+    : SquareField(type)
+    , max_position_(max_position){}
 
-class Ship: public SquareStop {
+  size_t max_position() {
+    return max_position_;
+  }
+
+  virtual ~SquareSpinningBase(){}
+private:
+  size_t max_position_;
+};
+class SquareJungle: public SquareSpinningBase {
+  SquareJungle()
+    : SquareSpinningBase(JUNGLE, 1) {}
+
+  ~SquareJungle() {};
+};
+class SquareDesert: public SquareSpinningBase {
+  SquareDesert()
+    : SquareSpinningBase(DESERT, 2) {}
+
+  ~SquareDesert() {};
+};
+class SquareBog: public SquareSpinningBase {
+  SquareBog()
+    : SquareSpinningBase(BOG, 3) {}
+
+  ~SquareBog() {};
+};
+class SquareMountains: public SquareSpinningBase {
+  SquareMountains()
+    : SquareSpinningBase(MOUNTAINS, 4) {}
+
+  ~SquareMountains() {};
+};
+
+
+class Ship: public SquareStopBase {
 public:
   Ship(Point coord)
-    : SquareStop(SHIP, true)
+    : SquareStopBase(SHIP, true)
     , coordinate_(coord) { }
 
   Point coordinate() const {
@@ -365,7 +408,7 @@ public:
     return map_.size();
   }
 
-  vector<Request> attack(const Player* player, Point coor) const {
+  vector<Request> attack(const Player* player, Point coor, size_t position) const {
     std::cout << player->login << " attacks " << coor.x <<", "<< coor.y << std::endl;
     vector<Request> result(0);
     for (Player* other_player: players_) {
