@@ -109,14 +109,14 @@ private:
   bool gold_;
   Point coordinate_;
   size_t position_on_square_;
-  bool dead_;
+  bool alive_;
 
 public:
   Pirate(Point coord)
       : gold_(0),
         coordinate_(coord),
         position_on_square_(0),
-        dead_(false) {
+        alive_(true) {
       std::cout << "Pirate created" << std::endl;
     }
 
@@ -131,17 +131,17 @@ public:
   }
 
   void kill() {
-    dead_ = true;
+    alive_ = false;
     gold_ = false;
     position_on_square_ = 0;
   }
-
+  }
 };
 
 class SquareBase {
 private:
   SquareType type_;
-  bool explored_; /// чтобы сервер мог следить за циклами
+  bool explored_; /// чтобы сервер мог следить за циклами (?)
 public :
   SquareBase()
       : type_(UNEXPLORED),
@@ -167,6 +167,7 @@ public :
     string result;
     result.push_back(char(type()));
     return result;
+    // return std::to_string(type()); should be working
   }
 };
 
@@ -175,7 +176,7 @@ typedef SquareBase SquareUnexplored;
 class SquareStop: public SquareBase { // на таких клетках может кончатся ход
 public:
   SquareStop(SquareType type, bool explored)
-    : SquareBase(type, explored){}
+    : SquareBase(type, explored) {}
 
   SquareStop()
     : SquareBase(WATER, true) {}
@@ -188,30 +189,6 @@ public:
 };
 
 typedef SquareStop SquareWater;
-
-/*
-class Square {
-private :
-  size_t gold_;
-  size_t num_of_steps_;
-  SquareType type_;
-public :
-  size_t gold() const {
-    return gold_;
-  }
-
-  size_t num_of_steps() const {
-    return num_of_steps_;
-  }
-
-  virtual EffectOfSquare effect() const {
-    return STOP;
-  }
-
-  SquareType type() const {
-    return type_;
-  }
-};*/
 
 class Ship {
 public:
@@ -266,7 +243,6 @@ public:
 
   virtual ~Player() { }
 };
-
 
 
 class GameMap: public vector<vector<SquareBase*> > {
