@@ -1,5 +1,6 @@
 #ifndef GAME_H_INCLUDED
 #define GAME_H_INCLUDED
+#endif // GAME_H_INCLUDED
 
 #include <iostream>
 #include <string>
@@ -19,16 +20,11 @@ const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
-enum Direction: char { TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT  };
-enum SquareType: char { UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN, SINGLEARROW, ARROWS, HOARSE, ICE,
-                  CROCODILE, BALOON, GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP }; /// Эдик! Стрелочек тоже 7 видов, плохо их -- одним элементом:(
-/// пока нет : самолёт, яма, ром, их заменяют обычные клетки field
-                  /// предлагаю сделать клетку "YOU_SHALL_NOT_PASS", в которых нет ничего и туда нельзя,
-                  /// очень не хочется заморачиваться с угловыми
-                  /// Ed: угловые будут проверятся той же функцией, которая проверяет выход за пределы поля.
-                  /// Ed: Яму не тяжело будет добавить. Смолет думаю тоже.
-                  /// Ed: Все стрелочки, кроме, может быть, одиннарных - один тип со списком направлений.
-                  /// В рисовалке может быть увеличим количество типов.
+enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, 
+                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
+enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN,
+                       SINGLEARROW, ARROWS, HOARSE, ICE, CROCODILE, BALOON, 
+                       GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
 
@@ -83,7 +79,8 @@ public:
 
 
   bool IsCorrectPoint(int size) { /// Иначе лезут warningи
-    return (x >= 0 && x < size && y >= 0 && y < size && !((x == size||x == 0) && (y == size || y == 0)));
+    return (x >= 0 && x < size && y >= 0 && y < size && 
+            !((x == size||x == 0) && (y == size || y == 0)));
   }
 
 };
@@ -96,33 +93,31 @@ struct Request {
   size_t pirate_num;
   Point destination;
   size_t position_on_square;
-  Request(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square)
-    :type(type)
-    , player_id(player_id)
-    , pirate_num(pirate_num)
-    , destination(destination)
-    , position_on_square(position_on_square)
-     {}
+  Request(EventType type, size_t player_id, size_t pirate_num, 
+          Point destination, size_t position_on_square)
+      : type(type),
+        player_id(player_id),
+        pirate_num(pirate_num),
+        destination(destination),
+        position_on_square(position_on_square) { }
 
   Request() {}
 };
 
 class Pirate {
-private :
+private:
   bool gold_;
   Point coordinate_;
   size_t position_on_square_;
   bool dead_;
 
-public :
+public:
   Pirate(Point coord)
-    : gold_(0)
-    , coordinate_(coord)
-    , position_on_square_(0)
-    , dead_(false) {
+      : gold_(0),
+        coordinate_(coord),
+        position_on_square_(0),
+        dead_(false) {
       std::cout << "Pirate created" << std::endl;
-      /// не могу понять, почему каждый пират при создании дублируется \(О.о)/
-      /// см. строку в server.cpp players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
     }
 
   bool gold() const {
@@ -149,14 +144,12 @@ private:
   bool explored_; /// чтобы сервер мог следить за циклами
 public :
   SquareBase()
-    : type_(UNEXPLORED)
-    , explored_(false){
-      }
+      : type_(UNEXPLORED),
+        explored_(false) { }
 
   SquareBase(SquareType type, bool explored)
-    : type_(type)
-    , explored_(explored){
-      }
+      : type_(type),
+        explored_(explored) { }
 
   virtual EffectOfSquare effectType(Pirate* pirate) const {
     return STOP;
@@ -223,20 +216,18 @@ public :
 class Ship {
 public:
   Ship(Point coord)
-  : coordinate_(coord){
-
-  }
+      : coordinate_(coord) { }
 
   Point coordinate() const {
     return coordinate_;
   }
 private:
-  Point coordinate_;// or store it in player?
-
+  Point coordinate_;  // or store it in player?
 };
 
 class FactoryForSquares {
-  /// сделать фабрику!!!
+  // сделать фабрику!!! 
+  // ну да, почти готово. (черт, я же должен удалять комментарии)
 };
 
 
@@ -245,15 +236,14 @@ class Event: public Request {
 public:
   string square_info;
 
-  Event(EventType type, size_t player_id, size_t pirate_num, Point destination, size_t position_on_square, string square_info)
-    : Request(type, player_id, pirate_num, destination, position_on_square)
-    , square_info(square_info)
-     {}
+  Event(EventType type, size_t player_id, size_t pirate_num, Point destination,
+        size_t position_on_square, string square_info)
+      : Request(type, player_id, pirate_num, destination, position_on_square),
+        square_info(square_info) { }
 
   Event(Request req, string square_info)
-    : Request(req)
-    , square_info(square_info)
-      {}
+      : Request(req),
+        square_info(square_info) { }
 };
 
 class Player {
@@ -264,18 +254,17 @@ public:
   Ship* ship;
 
   Player(size_t id, string login, Point ship_coord)
-    : id(id)
-    , login(login)
-    , pirates()
-    , ship(new Ship(ship_coord)) {
+      : id(id),
+        login(login),
+        pirates(),
+        ship(new Ship(ship_coord)) {
       for (size_t i=0; i < numberOfPirates; ++i){
         pirates.push_back(Pirate(ship_coord));
       }
       std::cout << "Player constructor" << std::endl;
     }
 
-  virtual ~Player() {
-  }
+  virtual ~Player() { }
 };
 
 
@@ -283,7 +272,7 @@ public:
 class GameMap: public vector<vector<SquareBase*> > {
 public:
   GameMap(size_t size = (sizeOfIsland + 2))
-    : vector<vector<SquareBase*> >(0)
+      : vector<vector<SquareBase*> >(0)
     {
       init(size);
       std::cout << "Map constructor" << std::endl;
@@ -305,8 +294,8 @@ public:
 class GameHolder {
 public:
   GameHolder(vector<Player*>& players, size_t size = sizeOfIsland + 2)
-    : map_(size)
-    , players_(players) {
+      : map_(size),
+        players_(players) {
         std::cout << "Game constructor" << std::endl;
       }
 
@@ -339,13 +328,15 @@ public:
     }
     /// Do something
     return true;
-    /// здесь прописываются все изменения на карте: с пиратом, и с клеткой под ним
-    /// на которого указывает событие (перемещение или бросок монетки или смерть) но не вся цепочка событий
-    /// в клиенте происходит просто accept всех событий отправленных сервером
+    // здесь прописываются все изменения на карте: с пиратом и с клеткой под ним
+    // на которого указывает событие (перемещение или бросок монетки или смерть)
+    // но не вся цепочка событий
+    // в клиенте происходит просто accept всех событий отправленных сервером
   }
 
   Request generate_request(size_t player_id, size_t pirate_num) {
-    // Будет определять, что происходит с пиратом когда он оказался на клетке которая не дает выбора
+    // Будет определять, что происходит с пиратом когда он оказался на клетке,
+    // которая не дает выбора
   }
 
   /*SquareBase* operator[](const Player &p) {
@@ -398,9 +389,4 @@ public:
 
 
 class RequestQuery {};
-// class ResponseQuery {};
-
-
-
-#endif // GAME_H_INCLUDED
-
+class ResponseQuery {};
