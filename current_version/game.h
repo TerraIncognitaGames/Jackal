@@ -20,10 +20,10 @@ const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
 
 /// If you change enum, don't forget to update functions.
-enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT, 
+enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAIN,
-                       SINGLEARROW, ARROWS, HOARSE, ICE, CROCODILE, BALOON, 
+                       SINGLEARROW, ARROWS, HOARSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
@@ -79,7 +79,7 @@ public:
 
 
   bool IsCorrectPoint(int size) { /// Иначе лезут warningи
-    return (x >= 0 && x < size && y >= 0 && y < size && 
+    return (x >= 0 && x < size && y >= 0 && y < size &&
             !((x == size||x == 0) && (y == size || y == 0)));
   }
 
@@ -93,7 +93,7 @@ struct Request {
   size_t pirate_num;
   Point destination;
   size_t position_on_square;
-  Request(EventType type, size_t player_id, size_t pirate_num, 
+  Request(EventType type, size_t player_id, size_t pirate_num,
           Point destination, size_t position_on_square)
       : type(type),
         player_id(player_id),
@@ -189,20 +189,25 @@ public:
 
 typedef SquareStop SquareWater;
 
-class Ship {
+
+
+class Ship: public SquareStop {
 public:
   Ship(Point coord)
-      : coordinate_(coord) { }
+    : SquareStop(SHIP, true)
+    , coordinate_(coord) { }
 
   Point coordinate() const {
     return coordinate_;
   }
+
+  ~Ship() {}
 private:
   Point coordinate_;  // or store it in player?
 };
 
 class FactoryForSquares {
-  // сделать фабрику!!! 
+  // сделать фабрику!!!
   // ну да, почти готово. (черт, я же должен удалять комментарии)
 };
 
