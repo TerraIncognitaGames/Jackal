@@ -220,10 +220,8 @@ int main() {
   //std::cout << game.get_square(Point(1, 1))->type();
   game.make_turn(game.players_[0]);
   game.make_turn(game.players_[1]);*/
-  WSAStartup();
-
-
-  TSocket s = CreateConnection(1);
+  setUpSocketWindows();
+  TSocket s = CreateConnection(6655442);
   TDataHandler handler;
   std::thread t([&s, &handler] () {
     s.RecvLoop(handler);

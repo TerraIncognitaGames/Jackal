@@ -34,7 +34,6 @@ class TSocket {
                     : Socket(socket(AF_INET, SOCK_STREAM, 0))
                 {
                     if (Socket < 0)
-                        std::cout << int(Socket);
                         throw std::runtime_error("could not create socket");
                 }
                 TSocketHolder(int socket)
@@ -137,3 +136,13 @@ class TSocket {
             }
         }
 };
+
+
+void setUpSocketWindows() {
+  #ifdef _WIN32
+  WSADATA wsaData;
+  if (WSAStartup(WINSOCK_VERSION, &wsaData) != 0) {
+    throw std::runtime_error("error in WSA startup");
+  } ;
+  #endif
+}

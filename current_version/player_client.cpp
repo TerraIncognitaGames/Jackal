@@ -26,6 +26,7 @@ void SendRequest() {
 }
 
 int main() {
+  setUpSocketWindows();
   SendRequest();
   return 0;
 }
