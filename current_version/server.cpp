@@ -39,7 +39,7 @@ void GameMap::init(size_t size) {
   /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
   std::vector<SquareType> SquareTypesForMapCreation;
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
-  /// на некоторых клетках должно сразу валяться золото 
+  /// на некоторых клетках должно сразу валяться золото
   // (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
   /// в конструктор клетки
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
@@ -59,6 +59,16 @@ void GameMap::init(size_t size) {
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
   /// ориентация и вариации (7х3) -//-
   /// эти настройки нужно будет вынести из этой функции в другое место
+  SquareField::goldDistribution.reserve(36);
+  SquareField::goldDistribution.resize(0);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 20, 0);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 5, 1);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 5, 2);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 3, 3);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 2, 4);
+  SquareField::goldDistribution.insert(SquareField::goldDistribution.end(), 1, 5);
+
+
   vector<SquareBase*> new_column;
   for (size_t i = 0; i < size; ++i) {
     new_column.resize(0);
@@ -75,7 +85,7 @@ public:
     : GameHolder(players_) {
   }
 
-  void make_turn(Player* player_) { 
+  void make_turn(Player* player_) {
     ServerPlayer* player = static_cast<ServerPlayer*>(player_);
     bool flag = false;
     Request request;
@@ -214,7 +224,15 @@ class TDataHandler {
 
 
 int main() {
-  /*vector<Player*> players;
+  setUpSocketWindows();
+
+
+  TSocket s = CreateConnection(6655442);
+  TDataHandler handler;
+  std::thread t([&s, &handler] () {
+    s.RecvLoop(handler);
+  });
+  vector<Player*> players;
   players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
   players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));
   players.push_back(new ServerPlayer(2, "C", Point((sizeOfIsland + 1)/2, 0)));
@@ -222,14 +240,7 @@ int main() {
   ServerGameHolder game(players);
   //std::cout << game.get_square(Point(1, 1))->type();
   game.make_turn(game.players_[0]);
-  game.make_turn(game.players_[1]);*/
-  setUpSocketWindows();
-  TSocket s = CreateConnection(6655442);
-  TDataHandler handler;
-  std::thread t([&s, &handler] () {
-    s.RecvLoop(handler);
-  });
+  game.make_turn(game.players_[1]);
   t.join();
-
   return 0;
 }

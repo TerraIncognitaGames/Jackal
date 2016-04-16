@@ -189,7 +189,38 @@ public:
 
 typedef SquareStop SquareWater;
 
+class SquareField: public SquareStop {
+friend class GameMap;
+public:
+  SquareField()
+    : SquareStop(FIELD, false)
+    , gold_(){
 
+    }
+  size_t gold() {
+    return gold_;
+  }
+
+  bool take_gold() {
+    if (gold() > 0) {
+      --gold_;
+      return true;
+    }
+    return false;
+  }
+
+  void put_gold() {
+    ++gold_;
+  }
+
+  virtual ~SquareField(){}
+
+protected:
+  size_t gold_;
+  static vector<unsigned int> goldDistribution;
+};
+
+vector<unsigned int> SquareField::goldDistribution;
 
 class Ship: public SquareStop {
 public:
@@ -303,7 +334,7 @@ public:
     return true;
   }
   bool accept(Request& req) {
-    if (possible_req(req)) {
+    if (!possible_req(req)) {
       return false;
     }
     /// Do something
