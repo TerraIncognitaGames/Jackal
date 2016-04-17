@@ -22,7 +22,7 @@ const size_t numberOfPlayers = 4; // Don't change this one
 
 /// If you change enum, don't forget to update functions.
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
-                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
+                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, HORSEDIR}; /// да, лошадь выглядит тут странно)
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
                        TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
@@ -75,7 +75,47 @@ public:
         return Point(x - 1, y - 1);
       case BOTTOMRIGHT:
         return Point(x + 1, y - 1);
+      case HORSEDIR:
+        throw std::runtime_error("HORSEDIR in GetPointToThe()");
+        return Point(0, 0);
     }
+  }
+
+  Direction GetDirectionByPoint(const Point& second) {
+    int dx = second.x - x;
+    int dy = second.y - y;
+    if (dx == -1) {
+      if (dy == -1) {
+        return BOTTOMLEFT;
+      }
+      if (dy == 0) {
+        return LEFT;
+      }
+      if (dy == 1) {
+        return TOPLEFT;
+      }
+    }
+    if (dx == 1) {
+      if (dy == -1) {
+        return BOTTOMRIGHT;
+      }
+      if (dy == 0) {
+        return RIGHT;
+      }
+      if (dy == 1) {
+        return TOPRIGHT;
+      }
+    }
+    if (dx == 0) {
+      if (dy == -1) {
+        return BOTTOM;
+      }
+      if (dy == 1) {
+        return TOP;
+      }
+    }
+
+    return HORSEDIR;
   }
 
 
@@ -158,7 +198,7 @@ public :
       : type_(type),
         explored_(explored) { }
 
-  virtual EffectOfSquare effectType(size_t player_id) const {
+  virtual EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return STOP;
   }
 
@@ -188,7 +228,7 @@ public:
   SquareStopBase()
     : SquareBase(WATER, true) {}
 
-  virtual EffectOfSquare effectType(size_t player_id) const {
+  virtual EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return STOP;
   }
 
@@ -332,7 +372,7 @@ public:
     : SquareBase(ARROW, newSquaresExplored),
       escape_directions_(escape_directions) {}
 
-  EffectOfSquare effectType(size_t player_id) const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     if (escape_directions_.size() == 1) {
       return GOON;
     }
@@ -354,18 +394,33 @@ public:
   SquareHorse()
     : SquareBase(HORSE, newSquaresExplored) {}
 
-  EffectOfSquare effectType(size_t player_id) const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return ASK;
   }
 
   ~SquareHorse() { };
-
-private:
-  // vector<Direction> escape_directions_;
-
 };
 
+class SquareIce: public SquareBase {
+public:
+  SquareIce(Point coordinate)
+    : SquareBase(ICE, newSquaresExplored)
+    , coordinate_(coordinate)
+    , lastMoveDir_(HORSEDIR) {}
 
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
+    if (pirate.coordinate().GetDirectionByPoint(coordinate_) == 1) {
+      return ASK;
+    }
+    return GOON;
+  }
+
+  ~SquareIce() { };
+private:
+  Point coordinate_;
+  Direction lastMoveDir_;
+};
+// class SquareGoonBase: public SquareBase {};
 
 
 class Ship: public SquareStopBase {
@@ -379,7 +434,7 @@ public:
     return coordinate_;
   }
 
-  EffectOfSquare effectType(size_t player_id) const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     if (player_id == owner_id_)
       return STOP;
     return KILL;

@@ -132,7 +132,7 @@ public:
     flag = false;
     while (!flag) {
       switch(map_[request.destination.x][request.destination.y]->
-             effectType(request.player_id)) {
+             effectType(player->id, player->pirates[request.pirate_num])) {
         case STOP:
           flag = true;
           for (Request req:attack(player, request.destination, request.position_on_square)){
