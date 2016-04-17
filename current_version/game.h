@@ -86,24 +86,6 @@ public:
 
 };
 
-class Pirate;
-
-struct Request {
-  EventType type;
-  size_t player_id;
-  size_t pirate_num;
-  Point destination;
-  size_t position_on_square;
-  Request(EventType type, size_t player_id, size_t pirate_num,
-          Point destination, size_t position_on_square)
-      : type(type),
-        player_id(player_id),
-        pirate_num(pirate_num),
-        destination(destination),
-        position_on_square(position_on_square) { }
-
-  Request() {}
-};
 
 class Pirate {
 private:
@@ -130,13 +112,38 @@ public:
   size_t position_on_square() const {
     return position_on_square_;
   }
+  bool alive() const {
+    return alive_;
+  }
 
   void kill() {
     alive_ = false;
     gold_ = false;
     position_on_square_ = 0;
   }
+
+  ~Pirate() {}
+
+  friend class GameHolder;
 };
+
+struct Request {
+  EventType type;
+  size_t player_id;
+  size_t pirate_num;
+  Point destination;
+  size_t position_on_square;
+  Request(EventType type, size_t player_id, size_t pirate_num,
+          Point destination, size_t position_on_square)
+      : type(type),
+        player_id(player_id),
+        pirate_num(pirate_num),
+        destination(destination),
+        position_on_square(position_on_square) { }
+
+  Request() {}
+};
+
 
 class SquareBase {
 private:
@@ -323,6 +330,7 @@ public:
 
 
 
+
 class Ship: public SquareStopBase {
 public:
   Ship(Point coord, size_t owner_id)
@@ -493,6 +501,16 @@ public:
       }
     }
     return result;
+  }
+
+  bool resurrect(Player* player, Point coord, Request &request) {
+    for (size_t i=0; i<numberOfPirates; ++i) {
+      if (!player->pirates[i].alive_) {
+        request = Request(MOVE, player->id, i, coord, 0);
+        return true;
+      }
+    }
+    return false;
   }
 
   ~GameHolder() {

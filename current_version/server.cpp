@@ -85,8 +85,15 @@ public:
 
   void make_turn(Player* player_) {
     ServerPlayer* player = static_cast<ServerPlayer*>(player_);
-    bool flag = false;
     Request request;
+    for (auto it=player->pirates.begin(); it!=player->pirates.end(); ++it) {
+      if (get_square_type(it->coordinate()) == ABORIGINE and it->alive()) {
+        if (resurrect(player_, it->coordinate(), request))
+          accept_and_send(request);
+      }
+    }
+    bool flag = false;
+
     size_t counter = 0;
     static size_t max_wrong_requests = 8;
     while (!flag) {
