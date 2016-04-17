@@ -18,12 +18,13 @@ using std::vector;
 
 const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
+const size_t numberOfPlayers = 4; // Don't change this one
 
 /// If you change enum, don't forget to update functions.
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
-                       TRAP, ARROW, HOARSE, ICE, CROCODILE, BALOON,
+                       TRAP, RUM, ARROW, HOARSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
@@ -276,6 +277,48 @@ public:
   ~SquareTrap() {}
 };
 
+class SquareRum: public SquareField {
+public:
+  SquareRum()
+    : SquareField(RUM)
+    , drunk_during_turn_(0){}
+
+  size_t drunk_during_turn() const {
+    return drunk_during_turn_;
+  }
+
+  void drink(size_t turn) {
+    drunk_during_turn_ = turn + numberOfPlayers;
+  }
+
+  ~SquareRum() {}
+private:
+  size_t drunk_during_turn_; /// current turn + 4
+};
+
+class SquareFortress: public SquareStopBase {
+public:
+  SquareFortress(SquareType type)
+    : SquareStopBase(type, false)
+     {}
+
+  SquareFortress()
+    : SquareStopBase(FORTRESS, false)
+    {}
+
+  virtual ~SquareFortress() {}
+};
+
+
+class SquareAborigine: public SquareFortress {
+public:
+  SquareAborigine()
+    : SquareFortress(ABORIGINE)
+    {}
+
+  ~SquareAborigine() {}
+};
+
 
 
 
@@ -372,6 +415,7 @@ class GameHolder {
 public:
   GameHolder(vector<Player*>& players, size_t size = sizeOfIsland + 2)
       : map_(size),
+      turn_(0),
         players_(players) {
         std::cout << "Game constructor" << std::endl;
       }
@@ -460,6 +504,7 @@ public:
 
 protected:
   GameMap map_;  // field_[0][0] is a Left Bottom corner.
+  size_t turn_;
 public:
   std::vector<Player*> players_;
 };

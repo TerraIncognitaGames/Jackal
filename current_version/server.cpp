@@ -38,10 +38,8 @@ void GameMap::init(size_t size) {
   /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
   /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
   std::vector<SquareType> SquareTypesForMapCreation;
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 64, FIELD);
-  /// на некоторых клетках должно сразу валяться золото
-  // (1 :5карт, 2 :5карт, 3 :3карты, 4 :2карты, 5 :1карта)
-  /// в конструктор клетки
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 60, FIELD);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, RUM);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
@@ -62,13 +60,12 @@ void GameMap::init(size_t size) {
   vector<unsigned int> goldDistribution;
   goldDistribution.reserve(36);
   goldDistribution.resize(0);
-  goldDistribution.insert(goldDistribution.end(), 20, 0);
+  goldDistribution.insert(goldDistribution.end(), 40, 0);
   goldDistribution.insert(goldDistribution.end(), 5, 1);
   goldDistribution.insert(goldDistribution.end(), 5, 2);
   goldDistribution.insert(goldDistribution.end(), 3, 3);
   goldDistribution.insert(goldDistribution.end(), 2, 4);
   goldDistribution.insert(goldDistribution.end(), 1, 5);
-
 
   vector<SquareBase*> new_column;
   for (size_t i = 0; i < size; ++i) {
@@ -166,6 +163,7 @@ public:
           accept_and_send(request);
       }
     }
+    ++turn_;
     /// подбор монетки происходит автоматически в accept
   }
 
