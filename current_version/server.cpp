@@ -39,16 +39,17 @@ void GameMap::init(size_t size) {
   /// вектор, из которого рандомайзер дл€ каждой клетки erase-ит рандомное значение,
   /// при выт€гивании : ARROW , GUN -- нас ещЄ должна волновать ориентаци€ (!)
   std::vector<SquareType> SquareTypesForMapCreation;
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 60, FIELD);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 56, FIELD);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, RUM);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 5, JUNGLE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, DESERT);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BOG);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, MOUNTAINS);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 3, TRAP);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, BALOON);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 4, CROCODILE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, ICE);
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, HOARSE);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 3, HORSE);// +1 вместо самолета
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, FORTRESS);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, ABORIGINE);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, CANNIBAL);

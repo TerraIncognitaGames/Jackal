@@ -24,7 +24,7 @@ const size_t numberOfPlayers = 4; // Don't change this one
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
-                       TRAP, RUM, ARROW, HOARSE, ICE, CROCODILE, BALOON,
+                       TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
@@ -328,8 +328,8 @@ public:
 
 class SquareArrow:public SquareBase {
 public:
-  SquareArrow(SquareType type, const vector<Direction>& escape_directions)
-    : SquareBase(type, newSquaresExplored),
+  SquareArrow(const vector<Direction>& escape_directions)
+    : SquareBase(ARROW, newSquaresExplored),
       escape_directions_(escape_directions) {}
 
   EffectOfSquare effectType(size_t player_id) const {
@@ -347,6 +347,22 @@ public:
 
 private:
   vector<Direction> escape_directions_;
+};
+
+class SquareHorse: public SquareBase {
+public:
+  SquareHorse()
+    : SquareBase(HORSE, newSquaresExplored) {}
+
+  EffectOfSquare effectType(size_t player_id) const {
+    return ASK;
+  }
+
+  ~SquareHorse() { };
+
+private:
+  // vector<Direction> escape_directions_;
+
 };
 
 
@@ -470,7 +486,7 @@ public:
   }
 
   bool possible_req(Request& req) const {
-
+    return true;
   }
   bool accept(Request& req) {
     if (!possible_req(req)) {
