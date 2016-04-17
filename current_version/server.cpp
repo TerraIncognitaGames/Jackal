@@ -55,8 +55,8 @@ void GameMap::init(size_t size) {
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 1, CANNIBAL);
   SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 2, GUN);
   /// ориентация
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, SINGLEARROW);
-  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 15, ARROWS);
+  // SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6, SINGLEARROW);
+  SquareTypesForMapCreation.insert(SquareTypesForMapCreation.end(), 6 + 15, ARROW);
   /// ориентация и вариации (7х3) -//-
   /// эти настройки нужно будет вынести из этой функции в другое место
   vector<unsigned int> goldDistribution;
@@ -126,8 +126,7 @@ public:
     flag = false;
     while (!flag) {
       switch(map_[request.destination.x][request.destination.y]->
-             effectType(&players_[request.player_id]->
-                        pirates[request.pirate_num])) {
+             effectType(request.player_id)) {
         case STOP:
           flag = true;
           for (Request req:attack(player, request.destination, request.position_on_square)){

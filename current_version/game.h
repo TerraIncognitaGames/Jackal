@@ -23,7 +23,7 @@ const size_t numberOfPirates = 3;
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT};
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
-                       SINGLEARROW, ARROWS, HOARSE, ICE, CROCODILE, BALOON,
+                       TRAP, ARROW, HOARSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
 enum EventType: char { DROPGOLD, MOVE, DEATH };
@@ -126,7 +126,7 @@ public:
   Point coordinate() const {
     return coordinate_;
   }
-  size_t position_on_square() {
+  size_t position_on_square() const {
     return position_on_square_;
   }
 
@@ -150,7 +150,7 @@ public :
       : type_(type),
         explored_(explored) { }
 
-  virtual EffectOfSquare effectType(Pirate* pirate) const {
+  virtual EffectOfSquare effectType(size_t player_id) const {
     return STOP;
   }
 
@@ -180,7 +180,7 @@ public:
   SquareStopBase()
     : SquareBase(WATER, true) {}
 
-  virtual EffectOfSquare effectType(Pirate* pirate) const {
+  virtual EffectOfSquare effectType(size_t player_id) const {
     return STOP;
   }
 
@@ -264,20 +264,43 @@ class SquareMountains: public SquareSpinningBase {
   ~SquareMountains() {};
 };
 
+class SquareTrap: public SquareField {
+public:
+  bool someone_traped; /// Поведение клетки зависит от этой переменной.
+  /// Уйти с клетки можно только если она false. Когда попадаешь на клетку,
+  /// если там нет человека(а врагов ты уже выбил), someone_traped меняется на true.
+  SquareTrap()
+    : SquareField(TRAP)
+    , someone_traped(false){}
+
+  ~SquareTrap() {}
+};
+
+
+
+
 
 class Ship: public SquareStopBase {
 public:
-  Ship(Point coord)
+  Ship(Point coord, size_t owner_id)
     : SquareStopBase(SHIP, true)
-    , coordinate_(coord) { }
+    , coordinate_(coord)
+    , owner_id_(owner_id) { }
 
   Point coordinate() const {
     return coordinate_;
   }
 
+  EffectOfSquare effectType(size_t player_id) const {
+    if (player_id == owner_id_)
+      return STOP;
+    return KILL;
+  }
+
   ~Ship() {}
 private:
-  Point coordinate_;  // or store it in player?
+  Point coordinate_;
+  size_t owner_id_;
 };
 
 class FactoryForSquares {
@@ -312,7 +335,7 @@ public:
       : id(id),
         login(login),
         pirates(),
-        ship(new Ship(ship_coord)) {
+        ship(new Ship(ship_coord, id)) {
       for (size_t i=0; i < numberOfPirates; ++i){
         pirates.push_back(Pirate(ship_coord));
       }
@@ -374,7 +397,7 @@ public:
   }
 
   bool possible_req(Request& req) const {
-    return true;
+
   }
   bool accept(Request& req) {
     if (!possible_req(req)) {
@@ -409,13 +432,13 @@ public:
   }
 
   vector<Request> attack(const Player* player, Point coor, size_t position) const {
-    std::cout << player->login << " attacks " << coor.x <<", "<< coor.y << std::endl;
+    std::cout << player->login << " attacks " << coor.x <<", "<< coor.y << ", " << position << std::endl;
     vector<Request> result(0);
     for (Player* other_player: players_) {
       if (player->id == other_player->id) {
       } else {
         for (size_t i=0; i<numberOfPirates; ++i) {
-          if (player->pirates[i].coordinate() == coor) {
+          if (player->pirates[i].coordinate() == coor && player->pirates[i].position_on_square() == position) {
             if (get_square_type(coor) == WATER || get_square_type(coor) == SHIP) {
               result.push_back(Request(EventType::DEATH, other_player->id, i, coor, 0));
             } else {
