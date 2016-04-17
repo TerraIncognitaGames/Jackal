@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include "socket.h"
+const bool newSquaresExplored = true;
 #include "game.h"
 
 

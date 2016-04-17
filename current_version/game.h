@@ -201,11 +201,11 @@ class SquareField: public SquareStopBase { /// Это также база для
 friend class GameMap;
 public:
   SquareField(SquareType type)
-    : SquareStopBase(type, false)
+    : SquareStopBase(type, newSquaresExplored)
     , gold_(0) {}
 
   SquareField(size_t gold)
-    : SquareStopBase(FIELD, false)
+    : SquareStopBase(FIELD, newSquaresExplored)
     , gold_(gold){}
 
   size_t gold() {
@@ -306,11 +306,11 @@ private:
 class SquareFortress: public SquareStopBase {
 public:
   SquareFortress(SquareType type)
-    : SquareStopBase(type, false)
+    : SquareStopBase(type, newSquaresExplored)
      {}
 
   SquareFortress()
-    : SquareStopBase(FORTRESS, false)
+    : SquareStopBase(FORTRESS, newSquaresExplored)
     {}
 
   virtual ~SquareFortress() {}
@@ -326,7 +326,28 @@ public:
   ~SquareAborigine() {}
 };
 
+class SquareArrow:public SquareBase {
+public:
+  SquareArrow(SquareType type, const vector<Direction>& escape_directions)
+    : SquareBase(type, newSquaresExplored),
+      escape_directions_(escape_directions) {}
 
+  EffectOfSquare effectType(size_t player_id) const {
+    if (escape_directions_.size() == 1) {
+      return GOON;
+    }
+    return ASK;
+  }
+
+  const vector<Direction>& escape_directions() const{
+    return escape_directions_;
+  }
+
+  ~SquareArrow() { };
+
+private:
+  vector<Direction> escape_directions_;
+};
 
 
 

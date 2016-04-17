@@ -1,6 +1,7 @@
 #include<iostream>
 #include <thread>
 #include "socket.h"
+const bool newSquaresExplored = false;
 #include "game.h"
 
 class ServerPlayer: public Player { // TODO: rename
