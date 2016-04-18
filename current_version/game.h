@@ -16,13 +16,14 @@ using std::map;
 using std::string;
 using std::vector;
 
+
 const size_t sizeOfIsland = 11; // без воды
 const size_t numberOfPirates = 3;
 const size_t numberOfPlayers = 4; // Don't change this one
 
 /// If you change enum, don't forget to update functions.
 enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
-                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, HORSEDIR}; /// да, лошадь выглядит тут странно)
+                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, HORSEDIR};
 enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
                        TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
@@ -80,7 +81,7 @@ public:
         return Point(0, 0);
     }
   }
-
+  
   Direction GetDirectionByPoint(const Point& second) {
     int dx = second.x - x;
     int dy = second.y - y;
@@ -118,14 +119,12 @@ public:
     return HORSEDIR;
   }
 
-
-  bool IsCorrectPoint(int size) { /// Иначе лезут warningи
+  bool IsCorrectPoint(int size) {
     return (x >= 0 && x < size && y >= 0 && y < size &&
             !((x == size||x == 0) && (y == size || y == 0)));
   }
 
 };
-
 
 class Pirate {
 private:
@@ -241,12 +240,12 @@ class SquareField: public SquareStopBase { /// Это также база для
 friend class GameMap;
 public:
   SquareField(SquareType type)
-    : SquareStopBase(type, newSquaresExplored)
-    , gold_(0) {}
+      : SquareStopBase(type, newSquaresExplored),
+        gold_(0) {}
 
   SquareField(size_t gold)
-    : SquareStopBase(FIELD, newSquaresExplored)
-    , gold_(gold){}
+      : SquareStopBase(FIELD, newSquaresExplored),
+        gold_(gold){}
 
   size_t gold() {
     return gold_;
@@ -269,15 +268,14 @@ public:
 protected:
   size_t gold_;
 };
-
 class SquareSpinningBase: public SquareField { // Вертушки
   /// Золото ложится на клетку в целом. Достается выбившему.
   /// Если бросить золото, то достается первому, кто сделает ход на эту/этой клетке.
   /// Хотим ли это улучшить?
 public:
   SquareSpinningBase(SquareType type, size_t max_position)
-    : SquareField(type)
-    , max_position_(max_position){}
+      : SquareField(type),
+        max_position_(max_position) {}
 
   size_t max_position() {
     return max_position_;
@@ -289,46 +287,44 @@ private:
 };
 class SquareJungle: public SquareSpinningBase {
   SquareJungle()
-    : SquareSpinningBase(JUNGLE, 1) {}
+      : SquareSpinningBase(JUNGLE, 1) {}
 
   ~SquareJungle() {};
 };
 class SquareDesert: public SquareSpinningBase {
   SquareDesert()
-    : SquareSpinningBase(DESERT, 2) {}
+      : SquareSpinningBase(DESERT, 2) {}
 
   ~SquareDesert() {};
 };
 class SquareBog: public SquareSpinningBase {
   SquareBog()
-    : SquareSpinningBase(BOG, 3) {}
+      : SquareSpinningBase(BOG, 3) {}
 
   ~SquareBog() {};
 };
 class SquareMountains: public SquareSpinningBase {
   SquareMountains()
-    : SquareSpinningBase(MOUNTAINS, 4) {}
+      : SquareSpinningBase(MOUNTAINS, 4) {}
 
   ~SquareMountains() {};
 };
-
 class SquareTrap: public SquareField {
 public:
   bool someone_traped; /// Поведение клетки зависит от этой переменной.
   /// Уйти с клетки можно только если она false. Когда попадаешь на клетку,
   /// если там нет человека(а врагов ты уже выбил), someone_traped меняется на true.
   SquareTrap()
-    : SquareField(TRAP)
-    , someone_traped(false){}
+      : SquareField(TRAP),
+        someone_traped(false) {}
 
   ~SquareTrap() {}
 };
-
 class SquareRum: public SquareField {
 public:
   SquareRum()
-    : SquareField(RUM)
-    , drunk_during_turn_(0){}
+      : SquareField(RUM),
+        drunk_during_turn_(0) {}
 
   size_t drunk_during_turn() const {
     return drunk_during_turn_;
@@ -342,35 +338,30 @@ public:
 private:
   size_t drunk_during_turn_; /// current turn + 4
 };
-
 class SquareFortress: public SquareStopBase {
 public:
   SquareFortress(SquareType type)
-    : SquareStopBase(type, newSquaresExplored)
-     {}
+      : SquareStopBase(type, newSquaresExplored) { }
 
   SquareFortress()
-    : SquareStopBase(FORTRESS, newSquaresExplored)
-    {}
+      : SquareStopBase(FORTRESS, newSquaresExplored) { }
 
   virtual ~SquareFortress() {}
 };
-
-
-class SquareAborigine: public SquareFortress {
+class SquareAborigine : public SquareFortress {
 public:
   SquareAborigine()
-    : SquareFortress(ABORIGINE)
-    {}
+      : SquareFortress(ABORIGINE) {}
 
   ~SquareAborigine() {}
 };
-
-class SquareArrow:public SquareBase {
+class SquareArrow : public SquareBase {
 public:
   SquareArrow(const vector<Direction>& escape_directions)
-    : SquareBase(ARROW, newSquaresExplored),
-      escape_directions_(escape_directions) {}
+      : SquareBase(ARROW, newSquaresExplored),
+        escape_directions_(escape_directions) {}
+        
+  SquareArrow() : SquareBase(ARROW, newSquaresExplored) {}
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     if (escape_directions_.size() == 1) {
@@ -388,11 +379,10 @@ public:
 private:
   vector<Direction> escape_directions_;
 };
-
 class SquareHorse: public SquareBase {
 public:
   SquareHorse()
-    : SquareBase(HORSE, newSquaresExplored) {}
+      : SquareBase(HORSE, newSquaresExplored) {}
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return ASK;
@@ -400,17 +390,18 @@ public:
 
   ~SquareHorse() { };
 };
-
 class SquareIce: public SquareBase {
 public:
   SquareIce(Point coordinate)
-    : SquareBase(ICE, newSquaresExplored)
-    , coordinate_(coordinate)
-    , lastMoveDir_(HORSEDIR) {}
+      : SquareBase(ICE, newSquaresExplored),
+        coordinate_(coordinate),
+        lastMoveDir_(HORSEDIR) {}
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     if (pirate.coordinate().GetDirectionByPoint(coordinate_) == 1) {
-      return ASK;
+      return ASK; // if player is on this square, coordinate_ == pirate.coordinate.
+       // pirate should remember his history. You will have to run this function before
+       // pirate is here?
     }
     return GOON;
   }
@@ -421,14 +412,12 @@ private:
   Direction lastMoveDir_;
 };
 // class SquareGoonBase: public SquareBase {};
-
-
 class Ship: public SquareStopBase {
 public:
   Ship(Point coord, size_t owner_id)
-    : SquareStopBase(SHIP, true)
-    , coordinate_(coord)
-    , owner_id_(owner_id) { }
+      : SquareStopBase(SHIP, true),
+      coordinate_(coord),
+      owner_id_(owner_id) { }
 
   Point coordinate() const {
     return coordinate_;
@@ -447,8 +436,40 @@ private:
 };
 
 class FactoryForSquares {
-  // сделать фабрику!!!
-  // ну да, почти готово. (черт, я же должен удалять комментарии)
+  /*
+  enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
+                       TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
+                       GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
+  */
+  // not complete yet
+ public:
+  SquareBase* CreateSquare(SquareType stype) {
+    switch (stype) {
+      case UNEXPLORED:
+        return new SquareBase();
+      case WATER:
+        return new SquareWater();
+      case FIELD:
+        return new SquareField();
+      case JUNGLE:
+        return new SquareJungle();
+      case DESERT:
+        return new SquareDesert();
+      case BOG:
+        return new SquareBog();
+      case MOUNTAINS:
+        return new SquareMountains();
+      case TRAP:
+        return new SquareTrap();
+      case RUM:
+        return new SquareRum();
+      case HORSE:
+        return new SquareHorse();
+      case ICE:
+        return new SquareHorse();
+    }
+    return new SquareBase;
+  }
 };
 
 
