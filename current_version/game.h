@@ -81,7 +81,7 @@ public:
         return Point(0, 0);
     }
   }
-  
+
   Direction GetDirectionByPoint(const Point& second) {
     int dx = second.x - x;
     int dy = second.y - y;
@@ -239,11 +239,7 @@ typedef SquareStopBase SquareWater;
 class SquareField: public SquareStopBase { /// Это также база для клеток на которые может упасть золото.
 friend class GameMap;
 public:
-  SquareField(SquareType type)
-      : SquareStopBase(type, newSquaresExplored),
-        gold_(0) {}
-
-  SquareField(size_t gold)
+  SquareField(SquareType type = FIELD, size_t gold = 0)
       : SquareStopBase(FIELD, newSquaresExplored),
         gold_(gold){}
 
@@ -286,24 +282,28 @@ private:
   size_t max_position_;
 };
 class SquareJungle: public SquareSpinningBase {
+public:
   SquareJungle()
       : SquareSpinningBase(JUNGLE, 1) {}
 
   ~SquareJungle() {};
 };
 class SquareDesert: public SquareSpinningBase {
+public:
   SquareDesert()
       : SquareSpinningBase(DESERT, 2) {}
 
   ~SquareDesert() {};
 };
 class SquareBog: public SquareSpinningBase {
+public:
   SquareBog()
       : SquareSpinningBase(BOG, 3) {}
 
   ~SquareBog() {};
 };
 class SquareMountains: public SquareSpinningBase {
+public:
   SquareMountains()
       : SquareSpinningBase(MOUNTAINS, 4) {}
 
@@ -339,7 +339,7 @@ private:
   size_t drunk_during_turn_; /// current turn + 4
 };
 class SquareFortress: public SquareStopBase {
-public:
+ public:
   SquareFortress(SquareType type)
       : SquareStopBase(type, newSquaresExplored) { }
 
@@ -360,7 +360,7 @@ public:
   SquareArrow(const vector<Direction>& escape_directions)
       : SquareBase(ARROW, newSquaresExplored),
         escape_directions_(escape_directions) {}
-        
+
   SquareArrow() : SquareBase(ARROW, newSquaresExplored) {}
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
@@ -434,6 +434,38 @@ private:
   Point coordinate_;
   size_t owner_id_;
 };
+class SquareCrocodile : public SquareBase {
+public:
+  SquareCrocodile() : SquareBase(CROCODILE, newSquaresExplored) { }
+
+  EffectOfSquare effectType() const {
+    return GOON;
+  }
+  
+  ~SquareCrocodile() {};
+};
+class SquareBaloon : public SquareBase {
+  SquareBaloon() : SquareBase(BALOON, newSquaresExplored) { }
+  EffectOfSquare effectType() const {
+    return GOON;
+  }
+  ~SquareBaloon() {};
+};
+class SquareGun : SquareBase {
+  SquareGun() : SquareBase(GUN, newSquaresExplored) { }
+  EffectOfSquare effectType() const {
+    return GOON;
+  }
+  ~SquareGun() {};
+}
+class SquareCanibal : SquareBase {
+  SquareCanibal() : SquareBase(CANNIBAL, newSquaresExplored) { }
+  EffectOfSquare effectType() const {
+    return DEATH;
+  }
+  ~SquareCanibal() {};
+}
+
 
 class FactoryForSquares {
   /*
@@ -443,7 +475,7 @@ class FactoryForSquares {
   */
   // not complete yet
  public:
-  SquareBase* CreateSquare(SquareType stype) {
+  SquareBase* CreateSquare(SquareType stype, map<string, string> params) {
     switch (stype) {
       case UNEXPLORED:
         return new SquareBase();
@@ -466,7 +498,9 @@ class FactoryForSquares {
       case HORSE:
         return new SquareHorse();
       case ICE:
-        return new SquareHorse();
+        return new SquareIce();
+      case CROCODILE:
+        return new SquareCrocodile();
     }
     return new SquareBase;
   }
