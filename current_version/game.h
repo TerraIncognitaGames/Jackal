@@ -438,33 +438,35 @@ class SquareCrocodile : public SquareBase {
 public:
   SquareCrocodile() : SquareBase(CROCODILE, newSquaresExplored) { }
 
-  EffectOfSquare effectType() const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return GOON;
   }
-  
+
   ~SquareCrocodile() {};
+
+  Point prev_coord_;
 };
 class SquareBaloon : public SquareBase {
   SquareBaloon() : SquareBase(BALOON, newSquaresExplored) { }
-  EffectOfSquare effectType() const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return GOON;
   }
-  ~SquareBaloon() {};
+  ~SquareBaloon() {}
 };
 class SquareGun : SquareBase {
   SquareGun() : SquareBase(GUN, newSquaresExplored) { }
-  EffectOfSquare effectType() const {
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return GOON;
   }
-  ~SquareGun() {};
-}
+  ~SquareGun() {}
+};
 class SquareCanibal : SquareBase {
   SquareCanibal() : SquareBase(CANNIBAL, newSquaresExplored) { }
-  EffectOfSquare effectType() const {
-    return DEATH;
+  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
+    return KILL;
   }
-  ~SquareCanibal() {};
-}
+  ~SquareCanibal() {}
+};
 
 
 class FactoryForSquares {
