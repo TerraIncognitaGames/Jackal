@@ -245,11 +245,11 @@ int main() {
   game.make_turn(game.players_[0]);
   game.make_turn(game.players_[1]);
   //std::cout << game.get_square(Point(1, 1))->type();
-  /*TSocket s = CreateConnection(6655442);
+  TSocket s = CreateConnection(6655442);
   TDataHandler handler;
   std::thread t([&s, &handler] () {
     s.RecvLoop(handler);
   });
-  t.join();*/
+  t.join();
   return 0;
 }

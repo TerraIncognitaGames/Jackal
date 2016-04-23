@@ -500,9 +500,10 @@ class FactoryForSquares {
       case HORSE:
         return new SquareHorse();
       case ICE:
-        return new SquareIce();
+ //       return new SquareIce();
       case CROCODILE:
-        return new SquareCrocodile();
+          return new SquareCrocodile();
+
     }
     return new SquareBase;
   }
