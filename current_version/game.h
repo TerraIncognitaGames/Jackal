@@ -477,7 +477,7 @@ class FactoryForSquares {
   */
   // not complete yet
  public:
-  SquareBase* CreateSquare(SquareType stype, map<string, string> params) {
+  SquareBase* CreateSquare(SquareType stype, string params="") {
     switch (stype) {
       case UNEXPLORED:
         return new SquareBase();
@@ -500,12 +500,19 @@ class FactoryForSquares {
       case HORSE:
         return new SquareHorse();
       case ICE:
- //       return new SquareIce();
+   //     return new SquareIce();
       case CROCODILE:
-          return new SquareCrocodile();
+     //   return new SquareCrocodile();
 
     }
     return new SquareBase;
+  }
+
+  SquareBase* CreateSquare(string info){
+    // std::stringstream stream(info);
+    SquareType type = static_cast<SquareType>(info[0]); // Поскольку SquareType --- char.
+    info.erase(0, 2);
+    return CreateSquare(type, info);
   }
 };
 
