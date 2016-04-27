@@ -236,6 +236,14 @@ class TDataHandler {
 
 int main() {
   setUpSocketWindows();
+  FactoryForSquares factory;
+  std::string st;
+  st.append(1, ICE);
+  SquareBase* sq=factory.createSquare(st.append(" 57 1"));
+  std::cout << st << "!!!!!!!!!!!";
+ // vector<size_t> v=factory.stringToVector(string("1 2 3 "));
+  //std::cout << v.size() << "!!!!!!!";
+
   vector<Player*> players;
   players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));
   players.push_back(new ServerPlayer(1, "B", Point(sizeOfIsland + 1, (sizeOfIsland + 1)/2)));

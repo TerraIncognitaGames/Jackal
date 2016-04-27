@@ -10,6 +10,7 @@
 #include <random>
 #include <functional>
 #include <time.h>
+#import <sstream>
 
 
 using std::map;
@@ -22,13 +23,15 @@ const size_t numberOfPirates = 3;
 const size_t numberOfPlayers = 4; // Don't change this one
 
 /// If you change enum, don't forget to update functions.
-enum Direction: char {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
+/// TODO: replace: <enum_name> ----->  <enum_name>:char
+/// В CodeBlocks глючат подсказки если сделать это сейчас
+enum Direction {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
                       TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, HORSEDIR};
-enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
+enum SquareType {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
                        TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
-enum EffectOfSquare: char { STOP, GOON, ASK, KILL };
-enum EventType: char { DROPGOLD, MOVE, DEATH };
+enum EffectOfSquare { STOP, GOON, ASK, KILL };
+enum EventType { DROPGOLD, MOVE, DEATH };
 
 /*
 EffectOfSquare effectOfCellType(SquareType type) {
@@ -201,7 +204,7 @@ public :
     return STOP;
   }
 
-  virtual SquareType type() const {
+  SquareType type() const {
     return type_;
   }
 
@@ -477,7 +480,7 @@ class FactoryForSquares {
   */
   // not complete yet
  public:
-  SquareBase* CreateSquare(SquareType stype, string params="") {
+  SquareBase* createSquare(SquareType stype, string params="") {
     switch (stype) {
       case UNEXPLORED:
         return new SquareBase();
@@ -499,20 +502,38 @@ class FactoryForSquares {
         return new SquareRum();
       case HORSE:
         return new SquareHorse();
-      case ICE:
-   //     return new SquareIce();
+      case ICE: {
+        vector<size_t> vec=stringToVector(params);
+        if (vec.size() != 2) {
+          throw std::runtime_error("Wrong parameters number: " + params + ", 2 required.");
+        }
+        return new SquareIce(Point(vec[0], vec[1]));
+      }
       case CROCODILE:
-     //   return new SquareCrocodile();
-
+        return new SquareCrocodile();
     }
     return new SquareBase;
   }
 
-  SquareBase* CreateSquare(string info){
+  SquareBase* createSquare(string info){
     // std::stringstream stream(info);
     SquareType type = static_cast<SquareType>(info[0]); // Поскольку SquareType --- char.
     info.erase(0, 2);
-    return CreateSquare(type, info);
+    return createSquare(type, info);
+  }
+
+private:
+  static vector<size_t> stringToVector(string info) {
+    info.push_back(' '); // otherwise empty string can be processed in a strange way
+    std::stringstream stream(info);
+    vector<size_t> return_vector;
+    size_t tmp;
+    stream >> tmp;
+    while (!stream.eof()) {
+      return_vector.push_back(tmp);
+      stream >> tmp;
+    }
+    return return_vector;
   }
 };
 
