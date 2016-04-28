@@ -10,7 +10,7 @@
 #include <random>
 #include <functional>
 #include <time.h>
-#import <sstream>
+#include <sstream>
 
 
 using std::map;
@@ -450,20 +450,24 @@ public:
   Point prev_coord_;
 };
 class SquareBaloon : public SquareBase {
+public:
   SquareBaloon() : SquareBase(BALOON, newSquaresExplored) { }
+
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return GOON;
   }
   ~SquareBaloon() {}
 };
-class SquareGun : SquareBase {
+class SquareGun : public SquareBase {
+public:
   SquareGun() : SquareBase(GUN, newSquaresExplored) { }
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return GOON;
   }
   ~SquareGun() {}
 };
-class SquareCanibal : SquareBase {
+class SquareCanibal : public SquareBase {
+public:
   SquareCanibal() : SquareBase(CANNIBAL, newSquaresExplored) { }
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
     return KILL;
@@ -480,6 +484,11 @@ class FactoryForSquares {
   */
   // not complete yet
  public:
+  static FactoryForSquares& Instance() {
+    static FactoryForSquares factory;
+    return factory;
+  }
+
   SquareBase* createSquare(SquareType stype, string params="") {
     switch (stype) {
       case UNEXPLORED:
@@ -505,12 +514,36 @@ class FactoryForSquares {
       case ICE: {
         vector<size_t> vec=stringToVector(params);
         if (vec.size() != 2) {
-          throw std::runtime_error("Wrong parameters number: " + params + ", 2 required.");
+          throw std::runtime_error("Wrong parameters number for ice: " + params + ", 2 required.");
         }
         return new SquareIce(Point(vec[0], vec[1]));
       }
       case CROCODILE:
-        return new SquareCrocodile();
+        return new SquareCrocodile;
+      case ARROW: {
+        vector<Direction> vec;
+        for (auto it:params) {
+          vec.push_back(static_cast<Direction>(it));
+        }
+        return new SquareArrow(vec);
+      }
+      case BALOON:
+        return new SquareBaloon();
+      case GUN:
+        return new SquareGun();
+      case CANNIBAL:
+        return new SquareCanibal();
+      case FORTRESS:
+        return new SquareFortress();
+      case ABORIGINE:
+        return new SquareAborigine();
+      case SHIP: {
+        vector<size_t> vec = stringToVector(params);
+        if (vec.size() != 3) {
+          throw std::runtime_error("Wrong parameters number for Ship: " + params + ", 3 required.");
+        }
+        return new Ship(Point(vec[0], vec[1]), vec[2]);
+      }
     }
     return new SquareBase;
   }
@@ -535,6 +568,11 @@ private:
     }
     return return_vector;
   }
+
+  FactoryForSquares() {}
+  FactoryForSquares(const FactoryForSquares &);
+  FactoryForSquares &operator = (const FactoryForSquares &);
+  ~FactoryForSquares() {}
 };
 
 
