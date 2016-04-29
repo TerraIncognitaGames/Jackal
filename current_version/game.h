@@ -419,6 +419,13 @@ public:
     return GOON;
   }
 
+  string info() const {
+    string result;
+    std::stringstream stream(result);
+    stream << char(type()) << ' ' << coordinate_.x << ' ' << coordinate_.y;
+    return result;
+  }
+
   ~SquareIce() { };
 private:
   Point coordinate_;
