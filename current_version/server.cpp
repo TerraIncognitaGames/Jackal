@@ -237,14 +237,14 @@ class TDataHandler {
 int main() {
   setUpSocketWindows();
   std::string st;
-  st.append(1, ARROW);
-  st.append(" ");
-  st.append(1, TOPRIGHT);
-  st.append(1, 20);
+  st.append(1, SHIP);
+  st.append(" 57 57 14");
   SquareBase* sq=FactoryForSquares::Instance().createSquare(st);
   std::cout << st << "!!!!!!!!!!!";
  // vector<size_t> v=factory.stringToVector(string("1 2 3 "));
-  std::cout << static_cast<SquareArrow*>(sq)->escape_directions()[1] << "!!!!!!!";
+  //std::cout << static_cast<SquareArrow*>(sq)->[1] << "!!!!!!!";
+  std::cout << sq->info();
+
 
   vector<Player*> players;
   players.push_back(new ServerPlayer(0, "A", Point((sizeOfIsland + 1) / 2, sizeOfIsland + 1)));

@@ -377,7 +377,17 @@ public:
     return escape_directions_;
   }
 
-  ~SquareArrow() { };
+  ~SquareArrow() { }
+
+  string info() const {
+    string result;
+    result.push_back(char(type()));
+    result.push_back(' ');
+    for (auto dir:escape_directions_) {
+      result.push_back(char(dir));
+    }
+    return result;
+  }
 
 private:
   vector<Direction> escape_directions_;
@@ -432,6 +442,13 @@ public:
     return KILL;
   }
 
+  string info() const{
+    string result;
+    std::stringstream stream(result);
+    stream << char(type()) << ' ' << coordinate().x << ' ' << coordinate().y << ' ' << owner_id_;
+    return result;
+  }
+
   ~Ship() {}
 private:
   Point coordinate_;
@@ -477,12 +494,6 @@ public:
 
 
 class FactoryForSquares {
-  /*
-  enum SquareType: char {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
-                       TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
-                       GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
-  */
-  // not complete yet
  public:
   static FactoryForSquares& Instance() {
     static FactoryForSquares factory;
@@ -743,6 +754,3 @@ public:
   std::vector<Player*> players_;
 };
 
-
-class RequestQuery {};
-class ResponseQuery {};
