@@ -249,9 +249,7 @@ public :
     // return std::to_string(type()); should be working
   }
 };
-
 typedef SquareBase SquareUnexplored;
-
 class SquareStopBase: public SquareBase { // на таких клетках может кончатся ход
 public:
   SquareStopBase(SquareType type, bool explored)
@@ -266,9 +264,7 @@ public:
 
   virtual ~SquareStopBase() { };
 };
-
 typedef SquareStopBase SquareWater;
-
 class SquareField: public SquareStopBase { /// Это также база для клеток на которые может упасть золото.
 friend class GameMap;
 public:
@@ -459,7 +455,6 @@ private:
   Point coordinate_;
   Direction lastMoveDir_;
 };
-// class SquareGoonBase: public SquareBase {};
 class Ship: public SquareStopBase {
 public:
   Ship(Point coord, size_t owner_id)
@@ -661,7 +656,7 @@ struct Player {
 };
 
 
-class GameMap: public vector<vector<SquareBase*> > {
+class GameMap: public vector<vector<SquareBase*>> {
  public:
   GameMap(size_t size = (sizeOfIsland + 2))
       : vector<vector<SquareBase*>>(0) {
@@ -689,11 +684,17 @@ class GameHolder {
       : map_(size), turn_(0), players_(players) {
     std::cout << "Game constructor" << std::endl;
   }
-  bool possible_req(Request& req) const {
-    return true;
+  bool IsPossibleRequest(Request& req) const {
+    const Pirate pirate = players_[req.player_id]->pirates[pirate_num];
+    switch (req.type) {
+      case MOVE:
+        return PirateCanGoTo(pirate, req.destination);
+      default:
+        return true;
+    }
   }
-  bool accept(Request& req) {
-    if (!possible_req(req)) {
+  bool Accept(Request& req) {
+    if (!IsPossibleRequest(req)) {
       return false;
     }
     /// Do something
@@ -789,12 +790,17 @@ class GameHolder {
           }
     }        
   }
-  vector<Point> GetAvailablePoints(const Pirate& pirate, bool has_gold) const {
+  vector<Point> GetAvailablePoints(const Pirate& pirate) const {
     const Point from = pirate.coordinate();
     const SquareBase* square = map_[from];
     vector<Point> available_points;
     vector<Point> potential_points = GetPotentialAvailablePointsFrom(from);
-    
+    for (const Point& potential_point : potential_points) {
+      if (PirateCanGoTo(pirate, potential_point)) {
+        available_points.push_back(potential_point);
+      }
+    }
+    return available_points;
   }
   Request GenerateRequest(size_t player_id, size_t pirate_num) {
     // Будет определять, что происходит с пиратом когда он оказался на клетке,
@@ -820,7 +826,7 @@ class GameHolder {
     }
     return result;
   }
-  bool Resurrect(Player* player, Point coord, Request &request) {
+  bool Resurrect(Player* player, Point coord, Request &request) const {
     for (size_t i=0; i<numberOfPirates; ++i) {
       if (!player->pirates[i].alive_) {
         request = Request(MOVE, player->id, i, coord, 0);
