@@ -26,133 +26,164 @@ const size_t numberOfPlayers = 4; // Don't change this one
 /// TODO: replace: <enum_name> ----->  <enum_name>:char
 /// В CodeBlocks глючат подсказки если сделать это сейчас
 enum Direction {TOP, BOTTOM, RIGHT, LEFT, TOPRIGHT,
-                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, HORSEDIR};
+                      TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT, NONE, HORSEDIR};
 enum SquareType {UNEXPLORED, WATER, FIELD, JUNGLE, DESERT, BOG, MOUNTAINS,
                        TRAP, RUM, ARROW, HORSE, ICE, CROCODILE, BALOON,
                        GUN, CANNIBAL, FORTRESS, ABORIGINE, SHIP };
 enum EffectOfSquare { STOP, GOON, ASK, KILL };
 enum EventType { DROPGOLD, MOVE, DEATH };
 
-/*
-EffectOfSquare effectOfCellType(SquareType type) {
-  switch (type){
-    case SINGLEARROW:
-    case ARROWS:
-    case GUN:
-    case HOARSE:
-    case BALOON:
-    case ICE:
-    case CROCODILE:
-      return true;
-    default:
-      return false;
-  }
-}*/
 
-
-class Point {
-public:
-  int x, y;
-  Point(int x_coord = 0, int y_coord = 0)
-    : x(x_coord), y(y_coord) {}
-
-
+struct Point {
+  int x, y, position;
+  Point(int x_coord = 0, int y_coord = 0, int position)
+    : x(x_coord), y(y_coord), position(position) { }
+    
   bool operator== (const Point &other) const {
-    return ((other.x == x) && (other.y == y));
+    return ((other.x == x) && (other.y == y) && other.position == position);
   }
-
-  Point GetPointToThe(Direction dir) {
-    switch (dir) {
-      case TOP:
-        return Point(x, y + 1);
-      case BOTTOM:
-        return Point(x, y - 1);
-      case RIGHT:
-        return Point(x + 1, y);
-      case LEFT:
-        return Point(x - 1, y);
-      case TOPRIGHT:
-        return Point(x + 1, y + 1);
-      case TOPLEFT:
-        return Point(x - 1, y + 1);
-      case BOTTOMLEFT:
-        return Point(x - 1, y - 1);
-      case BOTTOMRIGHT:
-        return Point(x + 1, y - 1);
-      case HORSEDIR:
-        throw std::runtime_error("HORSEDIR in GetPointToThe()");
-        return Point(0, 0);
-    }
-  }
-
-  Direction GetDirectionByPoint(const Point& second) {
-    int dx = second.x - x;
-    int dy = second.y - y;
-    if (dx == -1) {
-      if (dy == -1) {
-        return BOTTOMLEFT;
-      }
-      if (dy == 0) {
-        return LEFT;
-      }
-      if (dy == 1) {
-        return TOPLEFT;
-      }
-    }
-    if (dx == 1) {
-      if (dy == -1) {
-        return BOTTOMRIGHT;
-      }
-      if (dy == 0) {
-        return RIGHT;
-      }
-      if (dy == 1) {
-        return TOPRIGHT;
-      }
-    }
-    if (dx == 0) {
-      if (dy == -1) {
-        return BOTTOM;
-      }
-      if (dy == 1) {
-        return TOP;
-      }
-    }
-
-    return HORSEDIR;
-  }
-
-  bool IsCorrectPoint(int size) {
-    return (x >= 0 && x < size && y >= 0 && y < size &&
-            !((x == size||x == 0) && (y == size || y == 0)));
-  }
-
 };
+
+Point operator+(const Point& point, int dp) {
+  return Point(point.x, point.y, point.position + dp);
+}
+
+const Direction& GetOppositeDirection(const Direction& dir) {
+  switch (dir) {
+    case TOP:
+      return BOTTOM;
+    case BOTTOM:
+      return TOP;
+    case RIGHT:
+      return LEFT;
+    case LEFT:
+      return RIGHT;
+    case TOPRIGHT:
+      return BOTTOMLEFT;
+    case TOPLEFT:
+      return BOTTOMRIGHT;
+    case BOTTOMLEFT:
+      return TOPRIGHT;
+    case BOTTOMRIGHT:
+      return TOPLEFT;
+    case default:
+      return dir;
+  }
+} 
+
+
+const Point& GetPointToThe(const Point& from, Direction dir, 
+                           const Point& history=Point(0,0,-1)) {
+  int x = from.x;
+  int y = from.y;
+  switch (dir) {
+    case TOP:
+      return Point(x, y + 1);
+    case BOTTOM:
+      return Point(x, y - 1);
+    case RIGHT:
+      return Point(x + 1, y);
+    case LEFT:
+      return Point(x - 1, y);
+    case TOPRIGHT:
+      return Point(x + 1, y + 1);
+    case TOPLEFT:
+      return Point(x - 1, y + 1);
+    case BOTTOMLEFT:
+      return Point(x - 1, y - 1);
+    case BOTTOMRIGHT:
+      return Point(x + 1, y - 1);
+    case NONE:
+      return Point(x, y);
+    case HORSEDIR:
+      if (history.position == -1) {  // shouldn't be happening
+        throw std::runtime_error("Incorrect or missing history in \
+                                  game.h::GetPointToThe()");
+      } else {
+        int dx = x - history.x;
+        int dy = y - history.y;
+        return Point(x + dx, y + dy);
+      }
+      return Point(0, 0);
+  }
+}
+
+Direction GetDirection(const Point& first, const Point& second) {
+  int dx = second.x - first.x;
+  int dy = second.y - first.y;
+  if (dx < 0) {
+    if (dy  < 0) {
+      return BOTTOMLEFT;
+    }
+    if (dy == 0) {
+      return LEFT;
+    }
+    if (dy > 0) {
+      return TOPLEFT;
+    }
+  }
+  if (dx > 0) {
+    if (dy < 0) {
+      return BOTTOMRIGHT;
+    }
+    if (dy == 0) {
+      return RIGHT;
+    }
+    if (dy < 0) {
+      return TOPRIGHT;
+    }
+  }
+  if (dx == 0) {
+    if (dy < 0) {
+      return BOTTOM;
+    }
+    if (dy > 0) {
+      return TOP;
+    }
+  }
+  return NONE;
+}
+
+bool IsCorrectPoint(const Point &point, const int size) {
+  return (x >= 0 && x < size && y >= 0 && y < size &&
+          !((x == size||x == 0) && (y == size || y == 0)));
+}
+
+vector<Point> GetPotentialAvailablePointsFrom(const Point &point) {
+  vector<Direction> directions({TOP, BOTTOM, LEFT, RIGHT, TOPRIGHT, 
+                                TOPLEFT, BOTTOMRIGHT, BOTTOMLEFT})
+  vector<Point> potentials(10);
+  potentials.push_back(point + 1);
+  for (Direction dir : directions) {
+    potential_points.push_back(GetPointToThe(point, dir));
+  }
+  return potential_points;
+}
+
 
 class Pirate {
 private:
   bool gold_;
   Point coordinate_;
-  size_t position_on_square_;
   bool alive_;
+  int owner_id_;
 
 public:
-  Pirate(Point coord)
-      : gold_(0),
-        coordinate_(coord),
-        position_on_square_(0),
-        alive_(true) {
+  Pirate(Point coord, int owner_id, int position_on_square=0, bool gold=false)
+      : gold_(gold),
+        coordinate_(coord, position_on_square),
+        alive_(true), owner_id_(owner_id) {
       std::cout << "Pirate created" << std::endl;
     }
 
-  bool gold() const {
+  int get_owner_id() const {
+    return owner_id_;
+  }
+  bool has_gold() const {
     return gold_;
   }
   Point coordinate() const {
     return coordinate_;
-  }
-  size_t position_on_square() const {
-    return position_on_square_;
   }
   bool alive() const {
     return alive_;
@@ -161,7 +192,7 @@ public:
   void kill() {
     alive_ = false;
     gold_ = false;
-    position_on_square_ = 0;
+    coordinate_ = Point(-1, -1, -1);
   }
 
   ~Pirate() {}
@@ -174,7 +205,6 @@ struct Request {
   size_t player_id;
   size_t pirate_num;
   Point destination;
-  size_t position_on_square;
   Request(EventType type, size_t player_id, size_t pirate_num,
           Point destination, size_t position_on_square)
       : type(type),
@@ -190,7 +220,7 @@ struct Request {
 class SquareBase {
 private:
   SquareType type_;
-  bool explored_; /// чтобы сервер мог следить за циклами (?)
+  bool explored_;
 public :
   SquareBase()
       : type_(UNEXPLORED),
@@ -244,7 +274,7 @@ friend class GameMap;
 public:
   SquareField(SquareType type = FIELD, size_t gold = 0)
       : SquareStopBase(FIELD, newSquaresExplored),
-        gold_(gold){}
+        gold_(gold) {}
 
   size_t gold() {
     return gold_;
@@ -398,7 +428,7 @@ public:
       : SquareBase(HORSE, newSquaresExplored) {}
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
-    return ASK;
+    return GOON;
   }
 
   ~SquareHorse() { };
@@ -410,12 +440,10 @@ public:
         coordinate_(coordinate),
         lastMoveDir_(HORSEDIR) {}
 
-  EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
-    if (pirate.coordinate().GetDirectionByPoint(coordinate_) == 1) {
-      return ASK; // if player is on this square, coordinate_ == pirate.coordinate.
-       // pirate should remember his history. You will have to run this function before
-       // pirate is here?
-    }
+  EffectOfSquare effectType(/*int player_id, const Pirate& pirate*/) const {
+    // if (GetDirection(pirate.coordinate(), coordinate_) == 1) {
+    //   return ASK;
+    // }
     return GOON;
   }
 
@@ -444,11 +472,14 @@ public:
   }
 
   EffectOfSquare effectType(size_t player_id, const Pirate& pirate) const {
-    if (player_id == owner_id_)
+    if (pirate.owner_id() == owner_id_)
       return STOP;
     return KILL;
   }
-
+  
+  size_t owner_id() {
+    return owner_id_;
+  }
   string info() const{
     string result;
     std::stringstream stream(result);
@@ -533,7 +564,7 @@ class FactoryForSquares {
         vector<size_t> vec=stringToVector(params);
         if (vec.size() != 2) {
           throw std::runtime_error("Wrong parameters number for ice: " + params + ", 2 required.");
-        }
+        }  // WTF?????
         return new SquareIce(Point(vec[0], vec[1]));
       }
       case CROCODILE:
@@ -609,8 +640,7 @@ public:
         square_info(square_info) { }
 };
 
-class Player {
-public:
+struct Player {
   size_t id;
   string login;
   std::vector<Pirate> pirates;
@@ -632,56 +662,33 @@ public:
 
 
 class GameMap: public vector<vector<SquareBase*> > {
-public:
+ public:
   GameMap(size_t size = (sizeOfIsland + 2))
-      : vector<vector<SquareBase*> >(0)
-    {
-      init(size);
-      std::cout << "Map constructor" << std::endl;
-    }
+      : vector<vector<SquareBase*>>(0) {
+    Initialize(size);
+    std::cout << "Map constructor" << std::endl;
+  }
 
-    void init(size_t size); /// Эта функция реализуется по разному для сервера и клиента
-
-    ~GameMap() {
-      for (auto i:*this) {
-        for (SquareBase* j: i){
-          delete j;
-        }
+  void Initialize(size_t size); /// Эта функция реализуется по разному для сервера и клиента
+  SquareBase* operator[](const Point &point) {
+    return operator[](point.x, point.y);
+  }
+  ~GameMap() {
+    for (auto i:*this) {
+      for (SquareBase* j: i){
+        delete j;
       }
     }
-
+  }
 };
 
 
 class GameHolder {
-public:
+ public:
   GameHolder(vector<Player*>& players, size_t size = sizeOfIsland + 2)
-      : map_(size),
-      turn_(0),
-        players_(players) {
-        std::cout << "Game constructor" << std::endl;
-      }
-
-  SquareType get_square_type(Point p) const {
-    return map_[p.x][p.y]->type();
+      : map_(size), turn_(0), players_(players) {
+    std::cout << "Game constructor" << std::endl;
   }
-
-  string get_square_info(Point p) const {
-    return map_[p.x][p.y]->info();
-  }
-
-  vector<Pirate*> getPiratesAtPoint(Point coor) const {
-    vector<Pirate*> result;
-    for (Player* player: players_) {
-      for (Pirate pirate: player->pirates) {
-        if (pirate.coordinate() == coor) {
-          result.push_back(&pirate);
-        }
-      }
-    }
-    return result;
-  }
-
   bool possible_req(Request& req) const {
     return true;
   }
@@ -697,28 +704,105 @@ public:
     // в клиенте происходит просто accept всех событий отправленных сервером
   }
 
-  Request generate_request(size_t player_id, size_t pirate_num) {
+ private:
+  std::vector<Player*> players_;
+  int map_size() const {
+    return map_.size();
+  }
+  SquareType square_type(Point p) const {
+    return map_[p.x][p.y]->type();
+  }
+  string square_info(Point p) const {
+    return map_[p.x][p.y]->info();
+  }
+  vector<Pirate*> GetPiratesAtSquare(Point coor) const {
+    vector<Pirate*> result;
+    for (Player* player: players_) {
+      for (Pirate pirate: player->pirates) {
+        if (pirate.coordinate().x == coor.x &&
+            pirate.coordinate().y == coor.y)  {
+          result.push_back(&pirate);
+        }
+      }
+    }
+    return result;
+  }
+  Pirate* GetPirateAtPoint(const Point& coor) {
+    for (Player* player: players_) {
+      for (Pirate pirate: player->pirates) {
+        if (pirate.coordinate() == coor)  {
+          return &pirate;
+        }
+      }
+    }
+    return nullptr;
+  }
+  bool PirateCanGoTo(const Pirate& pirate, const Point &to) {
+    const Point from = pirate.coordinate();
+    SquareBase* from_square = map_[from];
+    SquareBase* to_square = map_[to];
+    switch (square_type(from)) {
+      case WATER:
+        return (square_type(to) == WATER || square_type(to) == SHIP);
+      case TRAP:
+        return false;
+      default:
+        if (square_type(to) == WATER) {
+          return false;
+        }
+    }
+    switch (square_type(from)) {
+      case JUNGLE:
+      case BOG:
+      case DESERT:
+      case MOUNTAINS:
+        if (!(from.position == 
+             dynamic_cast<SquareSpinningBase*>(from_square)->max_position())) {
+          return (!(pirate.has_gold() && bool(GetPirateAtPoint(from + 1))) &&
+              to == from + 1);
+        }
+      default:
+          /* here we already know, that pirate goes to another square
+          // and also we know, that from_ and to_ squares both are not water_squares
+          // and from_square is not a trap_square
+          // let's switch to_square, since we already have no interest in from_square
+          // interesting cases are:
+          //   SHIP (check, it's friendly)
+          //   CROCODILE (return false)
+          //   FORTRESS and ABORIGINE (check that it's empty)
+          //   default: check that either pirate hasn't coin or to_square is empty */
+          int distance_to_square = pow(from.x - to.x, 2) + pow(from.y - to.y, 2);
+          if (distance_to_square * (distance_square - 3) >= 0) {
+            return false;  // square is out of sight
+          }
+          switch(square_type(to)) {
+            case SHIP:
+              return (dynamic_cast<Ship*>(square_to)->owner_id() == 
+                      pirate.owner_id());
+            case CROCODILE:
+              return false;
+            case FORTRESS:
+            case ABORIGINE:
+              return !bool(GetPirateAtPoint(to));
+            default:               
+                return !(pirate.has_gold() && bool(GetPirateAtPoint(to)));
+          }
+    }        
+  }
+  vector<Point> GetAvailablePoints(const Pirate& pirate, bool has_gold) const {
+    const Point from = pirate.coordinate();
+    const SquareBase* square = map_[from];
+    vector<Point> available_points;
+    vector<Point> potential_points = GetPotentialAvailablePointsFrom(from);
+    
+  }
+  Request GenerateRequest(size_t player_id, size_t pirate_num) {
     // Будет определять, что происходит с пиратом когда он оказался на клетке,
     // которая не дает выбора
   }
-
-  /*SquareBase* operator[](const Player &p) {
-    return map_[p.coord.x][p.coord.y];
-  }
-  void Bash(Point coord, Direction direction) {
-    int size = map_.size();
-    (*this)[coord][direction] = false;
-    Point adjacent_point = GetPointToThe(coord, direction);
-    if (IsCorrectPoint(adjacent_point, map_.size())) {
-      (*this)[coord][GetOppositeDirection(direction)] = false;
-    }
-  }*/
-  int size() const {  // name should be lowercase.
-    return map_.size();
-  }
-
-  vector<Request> attack(const Player* player, Point coor, size_t position) const {
-    std::cout << player->login << " attacks " << coor.x <<", "<< coor.y << ", " << position << std::endl;
+  vector<Request> Attack(const Player* player, Point coor, size_t position) const {
+    std::cout << player->login << " attacks " << coor.x <<", "<< coor.y 
+              << ", " << position << std::endl;
     vector<Request> result(0);
     for (Player* other_player: players_) {
       if (player->id == other_player->id) {
@@ -736,8 +820,7 @@ public:
     }
     return result;
   }
-
-  bool resurrect(Player* player, Point coord, Request &request) {
+  bool Resurrect(Player* player, Point coord, Request &request) {
     for (size_t i=0; i<numberOfPirates; ++i) {
       if (!player->pirates[i].alive_) {
         request = Request(MOVE, player->id, i, coord, 0);
@@ -757,7 +840,5 @@ public:
 protected:
   GameMap map_;  // field_[0][0] is a Left Bottom corner.
   size_t turn_;
-public:
-  std::vector<Player*> players_;
 };
 
