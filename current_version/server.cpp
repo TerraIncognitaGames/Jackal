@@ -18,7 +18,7 @@ public:
 
   Request get_event_request() {
     std::cout << login << " enter request: " << std::endl;
-    return Request(EventType::MOVE, id, 0, Point(0, 0), 0);
+    return Request(EventType::MOVE, id, 0, Point(0, 0));
   }
 
   void ban() {
@@ -35,7 +35,7 @@ public:
     }
 };
 
-void GameMap::init(size_t size) {
+void GameMap::Initialize(size_t size) {
   /// вектор, из которого рандомайзер для каждой клетки erase-ит рандомное значение,
   /// при вытягивании : ARROW , GUN -- нас ещё должна волновать ориентация (!)
   std::vector<SquareType> SquareTypesForMapCreation;
@@ -87,15 +87,14 @@ public:
 
   void make_turn(Player* player_) {
     ServerPlayer* player = static_cast<ServerPlayer*>(player_);
-    Request request;
     for (auto it=player->pirates.begin(); it!=player->pirates.end(); ++it) {
       if (get_square_type(it->coordinate()) == ABORIGINE and it->alive()) {
-        if (resurrect(player_, it->coordinate(), request))
-          accept_and_send(request);
+        for (Request re:Resurrect(player_, it->coordinate()))
+          accept_and_send(re);
       }
     }
     bool flag = false;
-
+    Request request;
     size_t counter = 0;
     static size_t max_wrong_requests = 8;
     while (!flag) {
@@ -109,14 +108,14 @@ public:
           player->send("Wrong request");
           break;
         case DROPGOLD:
-          if (accept(request)) {
+          if (Accept(request)) {
             send_to_all(request);
           } else {
             ++counter;
             player->send("Wrong request");
           }
         case MOVE:
-          if (possible_req(request)) { ///!!!
+          if (IsPossibleRequest(request)) { ///!!!
             send_to_all(request);
             flag = true;
             break;
@@ -131,19 +130,19 @@ public:
     /// А здесь надо что-то делать с бесконечными циклами
     flag = false;
     while (!flag) {
-      switch(map_[request.destination.x][request.destination.y]->
+      switch(map_[request.destination]->
              effectType(player->id, player->pirates[request.pirate_num])) {
         case STOP:
           flag = true;
-          for (Request req:attack(player, request.destination, request.position_on_square)){
+          for (Request req:Attack(player, request.destination)){
             accept_and_send(req);
           }
-          accept(request);
+          Accept(request);
           break;
         case ASK:
-          accept(request);
+          Accept(request);
           request = player->get_event_request();
-          while (request.pirate_num != moving_pirate_num || !accept(request)) {
+          while (request.pirate_num != moving_pirate_num || !Accept(request)) {
             ++counter;
             if (counter > max_wrong_requests) {
               player->ban();
@@ -154,21 +153,21 @@ public:
           send_to_all(request);
           break;
         case GOON:
-          accept(request);
-          request = generate_request(player->id, moving_pirate_num);
-          if (accept(request)) {
+          Accept(request);
+          request = GenerateRequest(player->id, moving_pirate_num);
+          if (Accept(request)) {
             send_to_all(request);
           } else {
             flag = true;
             send_to_all(request);
             request = Request(EventType::DEATH, player->id, moving_pirate_num,
-                              request.destination, 0);
+                              request.destination);
             accept_and_send(request);
           }
         case KILL:
-          accept(request);
+          Accept(request);
           flag = true;
-          request = generate_request(player->id, moving_pirate_num);
+          request = GenerateRequest(player->id, moving_pirate_num);
           accept_and_send(request);
       }
     }
@@ -186,13 +185,13 @@ private:
   }
 
    void send_to_all(Request req) {
-    Event event(req.type, req.player_id, req.pirate_num, req.destination,
-                 req.position_on_square, get_square_info(req.destination));
+    Event event(req.type, req.player_id, req.pirate_num, req.destination
+                 , square_info(req.destination));
     send_to_all(event);
   }
 
   void accept_and_send(Request req) {
-    accept(req);
+    Accept(req);
     send_to_all(req);
   }
 
@@ -238,7 +237,7 @@ int main() {
   setUpSocketWindows();
   std::string st;
   st.append(1, SHIP);
-  st.append(" 57 57 14");
+  st.append(" 179 57 14");
   SquareBase* sq=FactoryForSquares::Instance().createSquare(st);
   std::cout << st << "!!!!!!!!!!!";
  // vector<size_t> v=factory.stringToVector(string("1 2 3 "));
